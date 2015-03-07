@@ -30,23 +30,26 @@ public class RemoteServerInterface implements ServerInterface {
     @Override
     public void connect () {
         sendMessage(new ConnectMessage());
-        try {
-            DatagramPacket packet = new DatagramPacket(new byte[1024], 1024, sockaddr);
-            while (true) {
-                socket.receive(packet);
-                ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
-                StatusUpdate update = (StatusUpdate) stream.readObject();
 
-                if (update.getNumber() > lastUpdateNumber) {
-                    notifyListeners(update);
-                    lastUpdateNumber = update.getNumber();
+        new Thread(()-> {
+            try {
+                DatagramPacket packet = new DatagramPacket(new byte[1024], 1024, sockaddr);
+                while (true) {
+                    socket.receive(packet);
+                    ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
+                    StatusUpdate update = (StatusUpdate) stream.readObject();
+
+                    if (update.getNumber() > lastUpdateNumber) {
+                        notifyListeners(update);
+                        lastUpdateNumber = update.getNumber();
+                    }
                 }
+            } catch (IOException e) {
+
+            } catch (ClassNotFoundException e) {
+
             }
-        } catch (IOException e) {
-
-        } catch (ClassNotFoundException e) {
-
-        }
+        }).start();
     }
 
     @Override
