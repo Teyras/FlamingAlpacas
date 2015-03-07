@@ -13,7 +13,7 @@ public class MainWindow {
 
     public MainWindow (ServerInterface serverInterface) {
         serverIface = serverInterface;
-        panel = new GamePanel();
+        panel = new GamePanel(30, 20);
 
         serverIface.addUpdateListener((StatusUpdate update) -> {
             System.out.printf("Status update %d received%n", update.getNumber());
@@ -23,7 +23,7 @@ public class MainWindow {
         JFrame.setDefaultLookAndFeelDecorated(true);
 
         final JFrame frame = new JFrame("Flaming Alpacas");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
