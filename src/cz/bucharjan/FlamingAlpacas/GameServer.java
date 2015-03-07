@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by teyras on 11.2.15.
@@ -14,6 +15,7 @@ public class GameServer {
     private int port;
     private List<Client> clients = new ArrayList<>();
     private long updateNumber;
+    Random random = new Random();
 
     public GameServer (int port) {
         this.port = port;
@@ -71,23 +73,66 @@ public class GameServer {
     }
 
     public synchronized void updateClients () {
-        StatusUpdate update = new StatusUpdate(++updateNumber);
+        int width = 50;
+        int height = 30;
 
-        for (Client client: clients) {
+        Coords[] monsters = new Coords[10];
+
+        for (int i = 0; i < monsters.length; i++) {
+            monsters[i] = new Coords(random.nextInt() % width, random.nextInt() % height);
+        }
+
+        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monsters);
+
+        for (Client client : clients) {
             client.update(update);
         }
+    }
+}
+
+class Coords {
+    private int x;
+    private int y;
+
+    public Coords (int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX () {
+        return x;
+    }
+
+    public int getY () {
+        return y;
     }
 }
 
 class StatusUpdate implements Serializable {
     private long number;
 
-    public StatusUpdate (long number) {
+    private int boardWidth;
+    private int boardHeight;
+
+    private Coords[] monsters;
+
+    public StatusUpdate (long number, int boardWidth, int boardHeight, Coords[] monsters) {
         this.number = number;
+        this.boardWidth = boardWidth;
+        this.boardHeight = boardHeight;
+        this.monsters = monsters;
     }
 
     public long getNumber () {
         return number;
+    }
+
+    public int getBoardWidth () {
+        return boardWidth;
+    }
+
+    public int getBoardHeight () {
+        return boardHeight;
     }
 }
 
