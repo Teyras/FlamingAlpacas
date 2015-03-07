@@ -79,7 +79,7 @@ public class GameServer {
         Coords[] monsters = new Coords[10];
 
         for (int i = 0; i < monsters.length; i++) {
-            monsters[i] = new Coords(random.nextInt() % width, random.nextInt() % height);
+            monsters[i] = new Coords(random.nextInt(Integer.MAX_VALUE) % width, random.nextInt(Integer.MAX_VALUE) % height);
         }
 
         StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monsters);
@@ -90,7 +90,7 @@ public class GameServer {
     }
 }
 
-class Coords {
+class Coords implements Serializable {
     private int x;
     private int y;
 
@@ -133,6 +133,10 @@ class StatusUpdate implements Serializable {
 
     public int getBoardHeight () {
         return boardHeight;
+    }
+
+    public Coords[] getMonsters () {
+        return monsters;
     }
 }
 

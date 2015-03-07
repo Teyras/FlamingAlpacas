@@ -18,23 +18,29 @@ public class MainWindow {
         serverIface.addUpdateListener((StatusUpdate update) -> {
             if (!connected) {
                 connected = true;
-                panel = new GamePanel(update.getBoardWidth(), update.getBoardHeight());
-
-                JFrame.setDefaultLookAndFeelDecorated(true);
-
-                final JFrame frame = new JFrame("Flaming Alpacas");
-                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-                Container pane = frame.getContentPane();
-                pane.setLayout(new BorderLayout());
-
-                pane.add(panel);
-
-                frame.pack();
-                frame.setVisible(true);
+                setupUI(update.getBoardWidth(), update.getBoardHeight());
             }
-            System.out.printf("Status update %d received%n", update.getNumber());
+
+            panel.paintMonsters(update.getMonsters());
+            panel.repaint();
         });
 
         serverIface.connect();
+    }
+
+    protected void setupUI (int width, int height) {
+        panel = new GamePanel(width, height);
+
+        JFrame.setDefaultLookAndFeelDecorated(true);
+
+        final JFrame frame = new JFrame("Flaming Alpacas");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        Container pane = frame.getContentPane();
+        pane.setLayout(new BorderLayout());
+
+        pane.add(panel);
+
+        frame.pack();
+        frame.setVisible(true);
     }
 }

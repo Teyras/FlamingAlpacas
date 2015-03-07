@@ -3,10 +3,14 @@ package cz.bucharjan.FlamingAlpacas;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 
 public class GamePanel extends javax.swing.JPanel {
     final int fieldSize = 20;
+
     private Image background;
+    private Image monsters;
+
     private int width;
     private int height;
 
@@ -49,5 +53,30 @@ public class GamePanel extends javax.swing.JPanel {
         }
 
         g.drawImage(background, 0, 0, null);
+
+        if (monsters != null) {
+            g.drawImage(monsters, 0, 0, null);
+        }
+    }
+
+    public void paintMonsters (Coords[] monsters) {
+        this.monsters = new BufferedImage(width * fieldSize, height * fieldSize, BufferedImage.TYPE_INT_ARGB);
+
+        if (this.monsters == null) {
+            return;
+        }
+
+        Graphics g = this.monsters.getGraphics();
+
+
+        g.setColor(Color.red);
+        for (Coords monster : monsters) {
+            g.fillOval(
+                    monster.getX() * fieldSize + 1,
+                    monster.getY() * fieldSize + 1,
+                    fieldSize - 2,
+                    fieldSize - 2
+            );
+        }
     }
 }
