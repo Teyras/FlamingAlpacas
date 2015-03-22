@@ -50,7 +50,7 @@ public class MainWindow {
             while (true) {
                 try {
                     Thread.sleep(25);
-                    panel.moveSprites();
+                    panel.moveSprites(25);
                     panel.repaint();
                 } catch (InterruptedException e) {
 

@@ -13,6 +13,8 @@ public abstract class Sprite {
 
     private int id;
 
+    private int timePerSquare = 200;
+
     public Sprite () {
 
     }
@@ -31,5 +33,9 @@ public abstract class Sprite {
 
     public Direction getDirection () {
         return direction;
+    }
+
+    public int getTimePerSquare () {
+        return timePerSquare;
     }
 }

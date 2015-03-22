@@ -27,7 +27,7 @@ public class GamePanel extends javax.swing.JPanel {
         this.height = height;
         this.player = player;
 
-        movement.put(player, new MovementData());
+        movement.put(player, new MovementData(player));
 
         setPreferredSize(new Dimension(width * fieldSize, height * fieldSize));
         paintPlayer();
@@ -107,11 +107,11 @@ public class GamePanel extends javax.swing.JPanel {
         }
     }
 
-    public void moveSprites () {
+    public void moveSprites (int time) {
         MovementData playerMovement = movement.get(player);
 
         if (playerMovement.isMoving()) {
-            if (playerMovement.addProgress(10)) {
+            if (playerMovement.addProgress(25)) {
                 player.setPosition(player.getPosition().transform(playerMovement.getDirection()));
             }
 
@@ -131,6 +131,12 @@ class MovementData {
 
     private boolean stopped = true;
 
+    private Sprite sprite;
+
+    public MovementData (Sprite sprite) {
+        this.sprite = sprite;
+    }
+
     public void setDirection (Direction direction) {
         this.direction = direction;
         stopped = direction == Direction.None;
@@ -143,8 +149,8 @@ class MovementData {
     public boolean addProgress (int steps) {
         progress += steps;
 
-        if (progress >= 100) {
-            progress = 0;
+        if (progress >= sprite.getTimePerSquare()) {
+            progress %= sprite.getTimePerSquare();
             return true;
         }
 
@@ -161,11 +167,11 @@ class MovementData {
 
     public int getXOffset (int fieldSize) {
         if (direction == Direction.Left) {
-            return (-progress * fieldSize) / 100;
+            return (-progress * fieldSize) / sprite.getTimePerSquare();
         }
 
         if (direction == Direction.Right) {
-            return (progress * fieldSize) / 100;
+            return (progress * fieldSize) / sprite.getTimePerSquare();
         }
 
         return 0;
@@ -173,11 +179,11 @@ class MovementData {
 
     public int getYOffset (int fieldSize) {
         if (direction == Direction.Up) {
-            return (-progress * fieldSize) / 100;
+            return (-progress * fieldSize) / sprite.getTimePerSquare();
         }
 
         if (direction == Direction.Down) {
-            return (progress * fieldSize) / 100;
+            return (progress * fieldSize) / sprite.getTimePerSquare();
         }
 
         return 0;
