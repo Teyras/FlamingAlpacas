@@ -144,8 +144,6 @@ class MovementData {
 
     private int progress;
 
-    private boolean stopped = true;
-
     private Sprite sprite;
 
     public MovementData (Sprite sprite) {
@@ -154,7 +152,6 @@ class MovementData {
 
     public void setDirection (Direction direction) {
         this.direction = direction;
-        stopped = direction == Direction.None;
     }
 
     public Direction getDirection () {
@@ -177,7 +174,7 @@ class MovementData {
     }
 
     public boolean isMoving () {
-        return !stopped || progress > 0;
+        return direction != Direction.None || progress > 0;
     }
 
     public int getXOffset (int fieldSize) {
