@@ -1,12 +1,12 @@
 package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Messages.ConnectMessage;
+import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
+import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by teyras on 11.2.15.
@@ -17,6 +17,10 @@ public class GameServer {
     private long updateNumber;
     Random random = new Random();
 
+    private List<Monster> monsters = new ArrayList<>();
+    private int width = 50;
+    private int height = 30;
+
     public GameServer (int port) {
         this.port = port;
     }
@@ -26,9 +30,49 @@ public class GameServer {
             while (true) {
                 try {
                     Thread.sleep(1000);
-                    updateClients();
-                } catch (InterruptedException e) {
+                } catch (InterruptedException e) {}
 
+                updateClients();
+            }
+        }).start();
+
+        for (int i = 0; i < height / 2; i++) {
+            Monster monster = new Monster(i);
+            monster.setPosition(new Coords(width - 1, i * 2));
+            monster.setDirection(Direction.Left);
+            monsters.add(monster);
+        }
+
+        new Thread(() -> {
+            Map<Sprite, Integer> remaining = new HashMap<Sprite, Integer>();
+
+            for (Monster monster : monsters) {
+                remaining.put(monster, monster.getTimePerSquare());
+            }
+
+            while (true) {
+                Integer time = null;
+
+                for (Map.Entry<Sprite, Integer> entry : remaining.entrySet()) {
+                    if (time == null || entry.getValue() < time) {
+                        time = entry.getValue();
+                    }
+                }
+
+                try {
+                    Thread.sleep(time);
+                } catch (InterruptedException e) {}
+
+                for (Map.Entry<Sprite, Integer> entry : remaining.entrySet()) {
+                    Integer newTime = entry.getValue() - time;
+
+                    Sprite sprite = entry.getKey();
+                    if (newTime.equals(0)) {
+                        newTime = sprite.getTimePerSquare();
+                        sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
+                    }
+
+                    remaining.put(sprite, newTime);
                 }
             }
         }).start();
@@ -73,16 +117,8 @@ public class GameServer {
     }
 
     public synchronized void updateClients () {
-        int width = 50;
-        int height = 30;
-
-        Coords[] monsters = new Coords[10];
-
-        for (int i = 0; i < monsters.length; i++) {
-            monsters[i] = new Coords(random.nextInt(Integer.MAX_VALUE) % width, random.nextInt(Integer.MAX_VALUE) % height);
-        }
-
-        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monsters);
+        Monster[] monstersArray = monsters.toArray(new Monster[monsters.size()]);
+        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray);
 
         for (Client client : clients) {
             client.update(update);
@@ -96,9 +132,9 @@ class StatusUpdate implements Serializable {
     private int boardWidth;
     private int boardHeight;
 
-    private Coords[] monsters;
+    private Monster[] monsters;
 
-    public StatusUpdate (long number, int boardWidth, int boardHeight, Coords[] monsters) {
+    public StatusUpdate (long number, int boardWidth, int boardHeight, Monster[] monsters) {
         this.number = number;
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
@@ -117,7 +153,7 @@ class StatusUpdate implements Serializable {
         return boardHeight;
     }
 
-    public Coords[] getMonsters () {
+    public Monster[] getMonsters () {
         return monsters;
     }
 }

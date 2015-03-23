@@ -23,6 +23,10 @@ public abstract class Sprite {
         this.id = id;
     }
 
+    public int getId () {
+        return id;
+    }
+
     public Coords getPosition () {
         return position;
     }
@@ -33,6 +37,10 @@ public abstract class Sprite {
 
     public Direction getDirection () {
         return direction;
+    }
+
+    public void setDirection (Direction direction) {
+        this.direction = direction;
     }
 
     public int getTimePerSquare () {

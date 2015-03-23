@@ -27,7 +27,7 @@ public class MainWindow {
                 setupUI(update.getBoardWidth(), update.getBoardHeight());
             }
 
-            panel.paintMonsters(update.getMonsters());
+            panel.updateSprites(update.getMonsters());
             panel.repaint();
         });
 

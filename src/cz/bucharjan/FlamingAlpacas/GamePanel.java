@@ -3,7 +3,6 @@ package cz.bucharjan.FlamingAlpacas;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import cz.bucharjan.FlamingAlpacas.Sprites.*;
@@ -12,7 +11,7 @@ public class GamePanel extends javax.swing.JPanel {
     final int fieldSize = 20;
 
     private Image background;
-    private Image monsters;
+    private Image monstersImage;
 
     private int width;
     private int height;
@@ -20,6 +19,7 @@ public class GamePanel extends javax.swing.JPanel {
     private Player player;
     private Image playerImage;
 
+    private Map<Integer, Monster> monsters = new HashMap<>();
     private Map<Sprite, MovementData> movement = new HashMap<>();
 
     public GamePanel (int width, int height, Player player) {
@@ -74,9 +74,7 @@ public class GamePanel extends javax.swing.JPanel {
 
         g.drawImage(background, 0, 0, null);
 
-        if (monsters != null) {
-            g.drawImage(monsters, 0, 0, null);
-        }
+        paintMonsters(g);
 
         int x = player.getPosition().getX();
         int y = player.getPosition().getY();
@@ -91,27 +89,26 @@ public class GamePanel extends javax.swing.JPanel {
         );
     }
 
-    public void paintMonsters (Coords[] monsters) {
-        this.monsters = new BufferedImage(width * fieldSize, height * fieldSize, BufferedImage.TYPE_INT_ARGB);
-
-        Graphics g = this.monsters.getGraphics();
+    private void paintMonsters (Graphics g) {
         g.setColor(Color.red);
 
-        for (Coords monster : monsters) {
+        for (Monster monster : monsters.values()) {
+            MovementData data = movement.get(monster);
+
             g.fillOval(
-                    monster.getX() * fieldSize + 1,
-                    monster.getY() * fieldSize + 1,
+                    monster.getPosition().getX() * fieldSize + 1 + data.getXOffset(fieldSize),
+                    monster.getPosition().getY() * fieldSize + 1 + data.getYOffset(fieldSize),
                     fieldSize - 2,
                     fieldSize - 2
             );
         }
     }
 
-    public void moveSprites (int time) {
+    public synchronized void moveSprites (int time) {
         MovementData playerMovement = movement.get(player);
 
         if (playerMovement.isMoving()) {
-            if (playerMovement.addProgress(25)) {
+            if (playerMovement.addProgress(time)) {
                 player.setPosition(player.getPosition().transform(playerMovement.getDirection()));
             }
 
@@ -120,6 +117,24 @@ public class GamePanel extends javax.swing.JPanel {
             }
         } else {
             playerMovement.setDirection(player.getDirection());
+        }
+
+        for (Monster monster : monsters.values()) {
+            movement.get(monster).addProgress(time);
+        }
+    }
+
+    public synchronized void updateSprites (Monster[] monsters) {
+        for (Monster newMonster : monsters) {
+            Monster monster = this.monsters.get(newMonster.getId());
+            if (monster == null) {
+                this.monsters.put(newMonster.getId(), newMonster);
+                this.movement.put(newMonster, new MovementData(newMonster));
+                continue;
+            }
+
+            monster.setDirection(newMonster.getDirection());
+            monster.setPosition(newMonster.getPosition());
         }
     }
 }
