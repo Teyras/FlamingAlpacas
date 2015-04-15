@@ -75,13 +75,17 @@ public class GamePanel extends javax.swing.JPanel {
             paintBackground();
         }
 
-        g.drawImage(background, 0, 0, null);
+        Image foreground = new BufferedImage(width * fieldSize, height * fieldSize, BufferedImage.TYPE_INT_ARGB);
+        Graphics foregroundGraphics = foreground.getGraphics();
 
         for (Monster monster : monsters.values()) {
-            paintSprite(g, monster);
+            paintSprite(foregroundGraphics, monster);
         }
 
-        paintSprite(g, player);
+        paintSprite(foregroundGraphics, player);
+
+        g.drawImage(background, 0, 0, null);
+        g.drawImage(foreground, 0, 0, null);
 
         frameCount++;
     }
