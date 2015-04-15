@@ -58,6 +58,17 @@ public class MainWindow {
             }
         }).start();
 
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                    System.out.printf("%d frames\n", panel.resetFrameCount());
+                } catch (InterruptedException e) {
+
+                }
+            }
+        }).start();
+
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
             Direction direction = keyToDirection(e);
 

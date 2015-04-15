@@ -17,6 +17,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     private Player player;
     private Image playerImage;
+    private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
     private Map<Sprite, MovementData> movement = new HashMap<>();
@@ -86,6 +87,8 @@ public class GamePanel extends javax.swing.JPanel {
                 y * fieldSize + playerMovement.getYOffset(fieldSize),
                 null
         );
+
+        frameCount++;
     }
 
     private void paintMonsters (Graphics g) {
@@ -143,6 +146,12 @@ public class GamePanel extends javax.swing.JPanel {
             monster.setPosition(newMonster.getPosition());
             this.movement.get(monster).setDirection(newMonster.getDirection());
         }
+    }
+
+    public int resetFrameCount () {
+        int value = frameCount;
+        frameCount = 0;
+        return value;
     }
 }
 
