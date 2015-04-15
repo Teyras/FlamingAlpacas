@@ -16,11 +16,12 @@ public class GamePanel extends javax.swing.JPanel {
     private int height;
 
     private Player player;
-    private Image playerImage;
+    private Image image;
     private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
     private Map<Sprite, MovementData> movement = new HashMap<>();
+    private Map<Sprite, Image> spriteImages = new HashMap<>();
 
     public GamePanel (int width, int height, Player player) {
         this.width = width;
@@ -57,11 +58,13 @@ public class GamePanel extends javax.swing.JPanel {
     }
 
     private void paintPlayer () {
-        playerImage = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
 
-        Graphics g = playerImage.getGraphics();
+        Graphics g = image.getGraphics();
         g.setColor(Color.blue);
         g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+
+        spriteImages.put(player, image);
     }
 
     @Override
@@ -74,36 +77,24 @@ public class GamePanel extends javax.swing.JPanel {
 
         g.drawImage(background, 0, 0, null);
 
-        paintMonsters(g);
+        for (Monster monster : monsters.values()) {
+            paintSprite(g, monster);
+        }
 
-        int x = player.getPosition().getX();
-        int y = player.getPosition().getY();
-
-        MovementData playerMovement = movement.get(player);
-
-        g.drawImage(
-                playerImage,
-                x * fieldSize + playerMovement.getXOffset(fieldSize),
-                y * fieldSize + playerMovement.getYOffset(fieldSize),
-                null
-        );
+        paintSprite(g, player);
 
         frameCount++;
     }
 
-    private void paintMonsters (Graphics g) {
-        g.setColor(Color.red);
+    private void paintSprite (Graphics g, Sprite sprite) {
+        MovementData data = movement.get(sprite);
 
-        for (Monster monster : monsters.values()) {
-            MovementData data = movement.get(monster);
-
-            g.fillOval(
-                    monster.getPosition().getX() * fieldSize + 1 + data.getXOffset(fieldSize),
-                    monster.getPosition().getY() * fieldSize + 1 + data.getYOffset(fieldSize),
-                    fieldSize - 2,
-                    fieldSize - 2
-            );
-        }
+        g.drawImage(
+            spriteImages.get(sprite),
+            sprite.getPosition().getX() * fieldSize + data.getXOffset(fieldSize),
+            sprite.getPosition().getY() * fieldSize + data.getYOffset(fieldSize),
+            null
+        );
     }
 
     public synchronized void moveSprites (int time) {
@@ -135,6 +126,7 @@ public class GamePanel extends javax.swing.JPanel {
             if (monster == null) {
                 this.monsters.put(newMonster.getId(), newMonster);
                 this.movement.put(newMonster, new MovementData(newMonster));
+                this.paintMonster(newMonster);
                 continue;
             }
 
@@ -146,6 +138,16 @@ public class GamePanel extends javax.swing.JPanel {
             monster.setPosition(newMonster.getPosition());
             this.movement.get(monster).setDirection(newMonster.getDirection());
         }
+    }
+
+    private void paintMonster (Monster monster) {
+        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics g = image.getGraphics();
+        g.setColor(Color.red);
+        g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+
+        spriteImages.put(monster, image);
     }
 
     public int resetFrameCount () {
