@@ -13,10 +13,14 @@ public abstract class Sprite {
 
     private int id;
 
-    private int timePerSquare = 200;
-
     public Sprite () {
 
+    }
+
+    public Sprite (Sprite sprite) {
+        this.id = sprite.getId();
+        this.position = sprite.getPosition();
+        this.direction = sprite.getDirection();
     }
 
     public Sprite (int id) {
@@ -44,6 +48,6 @@ public abstract class Sprite {
     }
 
     public int getTimePerSquare () {
-        return timePerSquare;
+        return 200;
     }
 }

@@ -11,7 +11,6 @@ public class GamePanel extends javax.swing.JPanel {
     final int fieldSize = 20;
 
     private Image background;
-    private Image monstersImage;
 
     private int width;
     private int height;
@@ -120,7 +119,10 @@ public class GamePanel extends javax.swing.JPanel {
         }
 
         for (Monster monster : monsters.values()) {
-            movement.get(monster).addProgress(time);
+            MovementData monsterMovement = movement.get(monster);
+            if (monsterMovement.addProgress(time)) {
+                monster.setPosition(monster.getPosition().transform(monsterMovement.getDirection()));
+            }
         }
     }
 
@@ -133,8 +135,13 @@ public class GamePanel extends javax.swing.JPanel {
                 continue;
             }
 
+            if (!newMonster.getPosition().equals(monster.getPosition())) {
+                this.movement.get(monster).clearProgress();
+            }
+
             monster.setDirection(newMonster.getDirection());
             monster.setPosition(newMonster.getPosition());
+            this.movement.get(monster).setDirection(newMonster.getDirection());
         }
     }
 }
@@ -162,7 +169,7 @@ class MovementData {
         progress += steps;
 
         if (progress >= sprite.getTimePerSquare()) {
-            progress %= sprite.getTimePerSquare();
+            progress = 0;
             return true;
         }
 
@@ -199,5 +206,9 @@ class MovementData {
         }
 
         return 0;
+    }
+
+    public void clearProgress () {
+        this.progress = 0;
     }
 }

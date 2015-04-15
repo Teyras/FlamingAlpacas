@@ -7,4 +7,12 @@ public class Monster extends Sprite {
     public Monster (int id) {
         super(id);
     }
+
+    public Monster (Monster monster) {
+        super(monster);
+    }
+
+    public int getTimePerSquare () {
+        return 1500;
+    }
 }

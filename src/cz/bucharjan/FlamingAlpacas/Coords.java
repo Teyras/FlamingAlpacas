@@ -23,6 +23,10 @@ public class Coords implements Serializable {
     }
 
     public Coords transform (Direction direction) {
+        if (direction == null) {
+            return new Coords(x, y);
+        }
+
         switch (direction) {
             case Up:
                 return new Coords(x, y - 1);

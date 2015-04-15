@@ -29,7 +29,7 @@ public class GameServer {
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {}
 
                 updateClients();
@@ -117,7 +117,13 @@ public class GameServer {
     }
 
     public synchronized void updateClients () {
-        Monster[] monstersArray = monsters.toArray(new Monster[monsters.size()]);
+        Monster[] monstersArray = new Monster[monsters.size()];
+        int i = 0;
+
+        for (Monster monster : monsters) {
+            monstersArray[i++] = new Monster(monster);
+        }
+
         StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray);
 
         for (Client client : clients) {
