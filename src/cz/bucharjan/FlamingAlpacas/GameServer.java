@@ -1,6 +1,7 @@
 package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Messages.ConnectMessage;
+import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
 import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 
@@ -13,13 +14,16 @@ import java.util.*;
  */
 public class GameServer {
     private int port;
-    private List<Client> clients = new ArrayList<>();
+    private List<ClientData> clients = new ArrayList<>();
     private long updateNumber;
     Random random = new Random();
 
     private List<Monster> monsters = new ArrayList<>();
+    private List<Ally> players = new ArrayList<>();
     private int width = 50;
     private int height = 30;
+
+    private int nextSpriteId = 0;
 
     public GameServer (int port) {
         this.port = port;
@@ -37,7 +41,7 @@ public class GameServer {
         }).start();
 
         for (int i = 0; i < height / 2; i++) {
-            Monster monster = new Monster(i);
+            Monster monster = new Monster(getSpriteId());
             monster.setPosition(new Coords(width - 1, i * 2));
             monster.setDirection(Direction.Left);
             monsters.add(monster);
@@ -87,7 +91,8 @@ public class GameServer {
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
                     Client from = null;
 
-                    for (Client client: clients) {
+                    for (ClientData clientData: clients) {
+                        Client client = clientData.getClient();
                         if (client instanceof RemoteClient && ((RemoteClient) client).getAddress().equals(packet.getSocketAddress())) {
                             from = client;
                             break;
@@ -112,7 +117,8 @@ public class GameServer {
 
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
-            clients.add(from);
+            Ally sprite = new Ally(getSpriteId());
+            clients.add(new ClientData(from, sprite));
         }
     }
 
@@ -126,9 +132,14 @@ public class GameServer {
 
         StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray);
 
-        for (Client client : clients) {
-            client.update(update);
+        for (ClientData data : clients) {
+            update.setPlayerId(data.getSprite().getId());
+            data.getClient().update(update);
         }
+    }
+
+    protected int getSpriteId () {
+        return nextSpriteId++;
     }
 }
 
@@ -139,6 +150,7 @@ class StatusUpdate implements Serializable {
     private int boardHeight;
 
     private Monster[] monsters;
+    private int playerId;
 
     public StatusUpdate (long number, int boardWidth, int boardHeight, Monster[] monsters) {
         this.number = number;
@@ -161,6 +173,32 @@ class StatusUpdate implements Serializable {
 
     public Monster[] getMonsters () {
         return monsters;
+    }
+
+    public void setPlayerId (int playerId) {
+        this.playerId = playerId;
+    }
+
+    public int getPlayerId () {
+        return playerId;
+    }
+}
+
+class ClientData {
+    private Client client;
+    private Ally sprite;
+
+    public ClientData (Client client, Ally sprite) {
+        this.client = client;
+        this.sprite = sprite;
+    }
+
+    public Client getClient () {
+        return client;
+    }
+
+    public Ally getSprite () {
+        return sprite;
     }
 }
 
