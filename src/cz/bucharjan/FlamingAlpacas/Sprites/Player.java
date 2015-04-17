@@ -13,6 +13,10 @@ import java.util.Stack;
 public class Player extends Sprite {
     private Stack<Direction> steering = new Stack<>();
 
+    public Player(Sprite sprite) {
+        super(sprite);
+    }
+
     public void steer (Direction direction) {
         if (!steering.contains(direction)) {
             steering.push(direction);

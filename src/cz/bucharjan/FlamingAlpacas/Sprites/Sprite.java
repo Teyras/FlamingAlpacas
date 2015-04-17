@@ -39,6 +39,10 @@ public abstract class Sprite {
         this.position = position;
     }
 
+    public void transformPosition (Direction direction) {
+        this.position = this.position.transform(direction);
+    }
+
     public Direction getDirection () {
         return direction;
     }

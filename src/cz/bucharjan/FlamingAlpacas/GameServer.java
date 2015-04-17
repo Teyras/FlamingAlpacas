@@ -1,6 +1,8 @@
 package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Messages.ConnectMessage;
+import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
+import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
 import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
@@ -14,9 +16,8 @@ import java.util.*;
  */
 public class GameServer {
     private int port;
-    private List<ClientData> clients = new ArrayList<>();
+    private Map<Client, ClientData> clients = new HashMap<>();
     private long updateNumber;
-    Random random = new Random();
 
     private List<Monster> monsters = new ArrayList<>();
     private List<Ally> players = new ArrayList<>();
@@ -91,7 +92,7 @@ public class GameServer {
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
                     Client from = null;
 
-                    for (ClientData clientData: clients) {
+                    for (ClientData clientData: clients.values()) {
                         Client client = clientData.getClient();
                         if (client instanceof RemoteClient && ((RemoteClient) client).getAddress().equals(packet.getSocketAddress())) {
                             from = client;
@@ -118,7 +119,24 @@ public class GameServer {
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
             Ally sprite = new Ally(getSpriteId());
-            clients.add(new ClientData(from, sprite));
+            players.add(sprite);
+            clients.put(from, new ClientData(from, sprite));
+        } else if (message instanceof MoveMessage) {
+            ClientData data = clients.get(from);
+            if (data == null) {
+                return;
+            }
+
+            Ally sprite = data.getSprite();
+            sprite.transformPosition(((MoveMessage) message).getDirection());
+        } else if (message instanceof SteerMessage) {
+            ClientData data = clients.get(from);
+            if (data == null) {
+                return;
+            }
+
+            Ally sprite = data.getSprite();
+            sprite.setDirection(((SteerMessage) message).getDirection());
         }
     }
 
@@ -130,9 +148,16 @@ public class GameServer {
             monstersArray[i++] = new Monster(monster);
         }
 
-        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray);
+        Ally[] playersArray = new Ally[players.size()];
+        i = 0;
 
-        for (ClientData data : clients) {
+        for (Ally player : players) {
+            playersArray[i++] = new Ally(player);
+        }
+
+        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray, playersArray);
+
+        for (ClientData data : clients.values()) {
             update.setPlayerId(data.getSprite().getId());
             data.getClient().update(update);
         }
@@ -151,12 +176,14 @@ class StatusUpdate implements Serializable {
 
     private Monster[] monsters;
     private int playerId;
+    private Ally[] players;
 
-    public StatusUpdate (long number, int boardWidth, int boardHeight, Monster[] monsters) {
+    public StatusUpdate (long number, int boardWidth, int boardHeight, Monster[] monsters, Ally[] players) {
         this.number = number;
         this.boardWidth = boardWidth;
         this.boardHeight = boardHeight;
         this.monsters = monsters;
+        this.players = players;
     }
 
     public long getNumber () {
@@ -181,6 +208,10 @@ class StatusUpdate implements Serializable {
 
     public int getPlayerId () {
         return playerId;
+    }
+
+    public Ally[] getPlayers() {
+        return players;
     }
 }
 

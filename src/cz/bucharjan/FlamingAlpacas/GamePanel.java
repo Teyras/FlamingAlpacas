@@ -2,6 +2,7 @@ package cz.bucharjan.FlamingAlpacas;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,8 +21,11 @@ public class GamePanel extends javax.swing.JPanel {
     private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
+    private Map<Integer, Ally> allies = new HashMap<>();
     private Map<Sprite, MovementData> movement = new HashMap<>();
     private Map<Sprite, Image> spriteImages = new HashMap<>();
+
+    private java.util.List<PlayerMoveAction> playerMoveListeners = new ArrayList<>();
 
     public GamePanel (int width, int height, Player player) {
         this.width = width;
@@ -32,6 +36,10 @@ public class GamePanel extends javax.swing.JPanel {
 
         setPreferredSize(new Dimension(width * fieldSize, height * fieldSize));
         paintPlayer();
+    }
+
+    public void addPlayerMoveListener (PlayerMoveAction action) {
+        playerMoveListeners.add(action);
     }
 
     private void paintBackground () {
@@ -92,12 +100,17 @@ public class GamePanel extends javax.swing.JPanel {
 
     private void paintSprite (Graphics g, Sprite sprite) {
         MovementData data = movement.get(sprite);
+        Image image = spriteImages.get(sprite);
+
+        if (data == null || image == null) {
+            return;
+        }
 
         g.drawImage(
-            spriteImages.get(sprite),
-            sprite.getPosition().getX() * fieldSize + data.getXOffset(fieldSize),
-            sprite.getPosition().getY() * fieldSize + data.getYOffset(fieldSize),
-            null
+                image,
+                sprite.getPosition().getX() * fieldSize + data.getXOffset(fieldSize),
+                sprite.getPosition().getY() * fieldSize + data.getYOffset(fieldSize),
+                null
         );
     }
 
@@ -107,6 +120,10 @@ public class GamePanel extends javax.swing.JPanel {
         if (playerMovement.isMoving()) {
             if (playerMovement.addProgress(time)) {
                 player.setPosition(player.getPosition().transform(playerMovement.getDirection()));
+
+                for (PlayerMoveAction action : playerMoveListeners) {
+                    action.run(playerMovement.getDirection());
+                }
             }
 
             if (playerMovement.canStop()) {
@@ -124,7 +141,7 @@ public class GamePanel extends javax.swing.JPanel {
         }
     }
 
-    public synchronized void updateSprites (Monster[] monsters) {
+    public synchronized void updateSprites (Monster[] monsters, Ally[] allies) {
         for (Monster newMonster : monsters) {
             Monster monster = this.monsters.get(newMonster.getId());
             if (monster == null) {
@@ -142,6 +159,28 @@ public class GamePanel extends javax.swing.JPanel {
             monster.setPosition(newMonster.getPosition());
             this.movement.get(monster).setDirection(newMonster.getDirection());
         }
+
+        for (Ally newAlly : allies) {
+            Ally ally = this.allies.get(newAlly.getId());
+            if (ally == null) {
+                if (newAlly.getId() == player.getId()) {
+                    continue;
+                } else {
+                    this.allies.put(newAlly.getId(), newAlly);
+                    this.movement.put(newAlly, new MovementData(newAlly));
+                    this.paintAlly(newAlly);
+                    continue;
+                }
+            }
+
+            if (!newAlly.getPosition().equals(ally.getPosition())) {
+                this.movement.get(ally).clearProgress();
+            }
+
+            ally.setDirection(newAlly.getDirection());
+            ally.setPosition(newAlly.getPosition());
+            this.movement.get(ally).setDirection(newAlly.getDirection());
+        }
     }
 
     private void paintMonster (Monster monster) {
@@ -152,6 +191,16 @@ public class GamePanel extends javax.swing.JPanel {
         g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
 
         spriteImages.put(monster, image);
+    }
+
+    private void paintAlly (Ally ally) {
+        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics g = image.getGraphics();
+        g.setColor(Color.green);
+        g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+
+        spriteImages.put(ally, image);
     }
 
     public int resetFrameCount () {
@@ -226,4 +275,8 @@ class MovementData {
     public void clearProgress () {
         this.progress = 0;
     }
+}
+
+interface PlayerMoveAction {
+    void run (Direction direction);
 }

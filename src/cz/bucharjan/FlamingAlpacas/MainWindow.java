@@ -1,13 +1,14 @@
 package cz.bucharjan.FlamingAlpacas;
 
+import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
+import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
+import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Player;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.Stack;
 
 /**
  * Created by teyras on 11.2.15.
@@ -16,18 +17,28 @@ public class MainWindow {
     ServerInterface serverIface;
     GamePanel panel;
     boolean connected = false;
-    Player player = new Player();
+    Player player = null;
 
     public MainWindow (ServerInterface serverInterface) {
         serverIface = serverInterface;
 
         serverIface.addUpdateListener((StatusUpdate update) -> {
             if (!connected) {
+                for (Ally player : update.getPlayers()) {
+                    if (player.getId() == update.getPlayerId()) {
+                        this.player = new Player(player);
+                    }
+                }
+
+                if (player == null) {
+                    return;
+                }
+
                 connected = true;
                 setupUI(update.getBoardWidth(), update.getBoardHeight());
             }
 
-            panel.updateSprites(update.getMonsters());
+            panel.updateSprites(update.getMonsters(), update.getPlayers());
             panel.repaint();
         });
 
@@ -45,6 +56,10 @@ public class MainWindow {
         pane.setLayout(new BorderLayout());
 
         pane.add(panel);
+
+        panel.addPlayerMoveListener((Direction direction) -> {
+            serverIface.sendMessage(new MoveMessage(direction));
+        });
 
         new Thread(() -> {
             while (true) {
@@ -79,9 +94,11 @@ public class MainWindow {
             switch (e.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     player.steer(direction);
+                    serverIface.sendMessage(new SteerMessage(player.getDirection()));
                     break;
                 case KeyEvent.KEY_RELEASED:
                     player.unsteer(direction);
+                    serverIface.sendMessage(new SteerMessage(player.getDirection()));
                     break;
             }
 
