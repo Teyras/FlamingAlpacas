@@ -18,6 +18,7 @@ public class MainWindow {
     GamePanel panel;
     boolean connected = false;
     Player player = null;
+    final JFrame frame = new JFrame("Flaming Alpacas");
 
     public MainWindow (ServerInterface serverInterface) {
         serverIface = serverInterface;
@@ -43,15 +44,16 @@ public class MainWindow {
         });
 
         serverIface.connect();
+
+        JFrame.setDefaultLookAndFeelDecorated(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     protected void setupUI (int width, int height) {
         panel = new GamePanel(width, height, player);
 
-        JFrame.setDefaultLookAndFeelDecorated(true);
-
-        final JFrame frame = new JFrame("Flaming Alpacas");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 

@@ -20,7 +20,6 @@ public class RemoteServerInterface implements ServerInterface {
     public RemoteServerInterface (InetAddress addr, int port) {
         try {
             socket = new DatagramSocket();
-
             sockaddr = new InetSocketAddress(addr, port);
         } catch (SocketException e) {
 
