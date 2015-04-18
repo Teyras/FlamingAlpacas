@@ -31,9 +31,9 @@ public class RemoteServerInterface implements ServerInterface {
         sendMessage(new ConnectMessage());
 
         new Thread(()-> {
-            try {
-                DatagramPacket packet = new DatagramPacket(new byte[1024], 1024, sockaddr);
-                while (true) {
+            DatagramPacket packet = new DatagramPacket(new byte[65536], 65536, sockaddr);
+            while (true) {
+                try {
                     socket.receive(packet);
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
                     StatusUpdate update = (StatusUpdate) stream.readObject();
@@ -42,11 +42,11 @@ public class RemoteServerInterface implements ServerInterface {
                         notifyListeners(update);
                         lastUpdateNumber = update.getNumber();
                     }
+                } catch (IOException e) {
+                    System.err.println("IOException");
+                } catch (ClassNotFoundException e) {
+                    System.err.println("ClassNotFoundException");
                 }
-            } catch (IOException e) {
-
-            } catch (ClassNotFoundException e) {
-
             }
         }).start();
     }
