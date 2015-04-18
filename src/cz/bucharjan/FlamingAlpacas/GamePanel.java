@@ -90,6 +90,10 @@ public class GamePanel extends javax.swing.JPanel {
             paintSprite(foregroundGraphics, monster);
         }
 
+        for (Ally ally : allies.values()) {
+            paintSprite(foregroundGraphics, ally);
+        }
+
         paintSprite(foregroundGraphics, player);
 
         g.drawImage(background, 0, 0, null);
