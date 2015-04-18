@@ -3,10 +3,12 @@ package cz.bucharjan.FlamingAlpacas.Sprites;
 import cz.bucharjan.FlamingAlpacas.Coords;
 import cz.bucharjan.FlamingAlpacas.Direction;
 
+import java.io.Serializable;
+
 /**
  * Created by teyras on 18.3.15.
  */
-public abstract class Sprite {
+public abstract class Sprite implements Serializable {
     private Coords position = new Coords(0, 0);
 
     private Direction direction = Direction.None;
