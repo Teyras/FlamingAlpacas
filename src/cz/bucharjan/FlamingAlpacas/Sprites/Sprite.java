@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Created by teyras on 18.3.15.
  */
 public abstract class Sprite implements Serializable {
-    private Coords position = new Coords(0, 0);
+    private Coords position = null;
 
     private Direction direction = Direction.None;
 

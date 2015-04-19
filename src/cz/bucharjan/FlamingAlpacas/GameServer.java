@@ -19,11 +19,11 @@ public class GameServer {
     private Map<Client, ClientData> clients = new HashMap<>();
     private long updateNumber;
 
-    private List<Monster> monsters = new ArrayList<>();
-    private List<Ally> players = new ArrayList<>();
+    private final List<Monster> monsters = new ArrayList<>();
+    private final List<Ally> players = new ArrayList<>();
     private Board board;
+    private GameController controller;
 
-    private int nextSpriteId = 0;
 
     public GameServer (int port) {
         this.port = port;
@@ -48,53 +48,10 @@ public class GameServer {
             walls[i][0] = true;
             walls[i][height - 1] = true;
         }
-        for (int i = 0; i < height; i++) {
-            walls[0][i] = true;
-            walls[width - 1][i] = true;
-        }
-
-        for (int i = 0; i < height / 2; i++) {
-            Monster monster = new Monster(getSpriteId());
-            monster.setPosition(new Coords(width - 1, i * 2));
-            monster.setDirection(Direction.Left);
-            monsters.add(monster);
-        }
 
         this.board = new Board(width, height, walls);
-
-        new Thread(() -> {
-            Map<Sprite, Integer> remaining = new HashMap<Sprite, Integer>();
-
-            for (Monster monster : monsters) {
-                remaining.put(monster, monster.getTimePerSquare());
-            }
-
-            while (true) {
-                Integer time = null;
-
-                for (Map.Entry<Sprite, Integer> entry : remaining.entrySet()) {
-                    if (time == null || entry.getValue() < time) {
-                        time = entry.getValue();
-                    }
-                }
-
-                try {
-                    Thread.sleep(time);
-                } catch (InterruptedException e) {}
-
-                for (Map.Entry<Sprite, Integer> entry : remaining.entrySet()) {
-                    Integer newTime = entry.getValue() - time;
-
-                    Sprite sprite = entry.getKey();
-                    if (newTime.equals(0)) {
-                        newTime = sprite.getTimePerSquare();
-                        sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
-                    }
-
-                    remaining.put(sprite, newTime);
-                }
-            }
-        }).start();
+        this.controller = new GameController(board, monsters, players);
+        this.controller.run();
 
         try {
             DatagramSocket socket = new DatagramSocket(port);
@@ -132,9 +89,7 @@ public class GameServer {
 
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
-            Ally sprite = new Ally(getSpriteId());
-            sprite.setPosition(new Coords(1, 1));
-            players.add(sprite);
+            Ally sprite = controller.spawnPlayer();
             clients.put(from, new ClientData(from, sprite));
         } else if (message instanceof MoveMessage) {
             ClientData data = clients.get(from);
@@ -156,32 +111,14 @@ public class GameServer {
     }
 
     public synchronized void updateClients () {
-        Monster[] monstersArray = new Monster[monsters.size()];
-        int i = 0;
-
-        for (Monster monster : monsters) {
-            monstersArray[i++] = new Monster(monster);
-        }
-
-        Ally[] playersArray = new Ally[players.size()];
-        i = 0;
-
-        for (Ally player : players) {
-            playersArray[i++] = new Ally(player);
-        }
-
         StatusUpdate update = new StatusUpdate(++updateNumber);
         update.setBoard(board);
-        update.setObjects(monstersArray, playersArray);
+        update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy());
 
         for (ClientData data : clients.values()) {
             update.setPlayerId(data.getSprite().getId());
             data.getClient().update(update);
         }
-    }
-
-    protected int getSpriteId () {
-        return nextSpriteId++;
     }
 }
 
