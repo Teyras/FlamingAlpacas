@@ -143,6 +143,13 @@ public class GamePanel extends javax.swing.JPanel {
                 monster.setPosition(monster.getPosition().transform(monsterMovement.getDirection()));
             }
         }
+
+        for (Ally ally : allies.values()) {
+            MovementData allyMovement = movement.get(ally);
+            if (allyMovement.addProgress(time)) {
+                ally.setPosition(ally.getPosition().transform(allyMovement.getDirection()));
+            }
+        }
     }
 
     public synchronized void updateSprites (Monster[] monsters, Ally[] allies) {
