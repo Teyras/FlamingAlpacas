@@ -40,4 +40,12 @@ public class Coords implements Serializable {
 
         return new Coords(x, y);
     }
+
+    public boolean equals (Object object) {
+        return
+                object != null &&
+                object instanceof Coords &&
+                x == ((Coords) object).getX() &&
+                y == ((Coords) object).getY();
+    }
 }
