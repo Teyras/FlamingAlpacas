@@ -5,11 +5,13 @@ import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
-import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by teyras on 11.2.15.
@@ -27,18 +29,6 @@ public class GameServer {
 
     public GameServer (int port) {
         this.port = port;
-    }
-
-    public void serve () {
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {}
-
-                updateClients();
-            }
-        }).start();
 
         int width = 50;
         int height = 30;
@@ -51,7 +41,13 @@ public class GameServer {
 
         this.board = new Board(width, height, walls);
         this.controller = new GameController(board, monsters, players);
-        this.controller.run();
+    }
+
+    public void serve () {
+        ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+        executor.scheduleAtFixedRate(this::updateClients, 0, 200, TimeUnit.MILLISECONDS);
+
+        controller.run();
 
         try {
             DatagramSocket socket = new DatagramSocket(port);
@@ -63,7 +59,7 @@ public class GameServer {
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
                     Client from = null;
 
-                    for (ClientData clientData: clients.values()) {
+                    for (ClientData clientData : clients.values()) {
                         Client client = clientData.getClient();
                         if (client instanceof RemoteClient && ((RemoteClient) client).getAddress().equals(packet.getSocketAddress())) {
                             from = client;

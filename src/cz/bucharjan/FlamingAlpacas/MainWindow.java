@@ -9,6 +9,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by teyras on 11.2.15.
@@ -63,28 +66,17 @@ public class MainWindow {
             serverIface.sendMessage(new MoveMessage(direction));
         });
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(25);
-                    panel.moveSprites(25);
-                    panel.repaint();
-                } catch (InterruptedException e) {
+        ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+        int repaintPeriod = 25;
 
-                }
-            }
-        }).start();
+        executor.scheduleAtFixedRate(() -> {
+            panel.moveSprites(repaintPeriod);
+            panel.repaint();
+        }, 0, repaintPeriod, TimeUnit.MILLISECONDS);
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                    System.out.printf("%d frames\n", panel.resetFrameCount());
-                } catch (InterruptedException e) {
-
-                }
-            }
-        }).start();
+        executor.scheduleAtFixedRate(() -> {
+            System.out.printf("%d frames\n", panel.resetFrameCount());
+        }, 0, 1, TimeUnit.SECONDS);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
             Direction direction = keyToDirection(e);
