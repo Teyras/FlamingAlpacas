@@ -1,9 +1,11 @@
 package cz.bucharjan.FlamingAlpacas;
 
+import java.io.Serializable;
+
 /**
  * Created by teyras on 19.4.15.
  */
-public class Board {
+public class Board implements Serializable {
     private int width;
     private int height;
     boolean[][] walls;
