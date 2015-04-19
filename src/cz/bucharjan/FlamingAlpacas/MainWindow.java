@@ -36,7 +36,7 @@ public class MainWindow {
                 }
 
                 connected = true;
-                setupUI(update.getBoardWidth(), update.getBoardHeight());
+                setupUI(update.getBoard());
             }
 
             panel.updateSprites(update.getMonsters(), update.getPlayers());
@@ -51,8 +51,8 @@ public class MainWindow {
         frame.setVisible(true);
     }
 
-    protected void setupUI (int width, int height) {
-        panel = new GamePanel(width, height, player);
+    protected void setupUI (Board board) {
+        panel = new GamePanel(board, player);
 
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());

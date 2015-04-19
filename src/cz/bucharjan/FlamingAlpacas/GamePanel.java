@@ -13,8 +13,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     private Image background;
 
-    private int width;
-    private int height;
+    Board board;
 
     private Player player;
     private Image image;
@@ -27,14 +26,13 @@ public class GamePanel extends javax.swing.JPanel {
 
     private java.util.List<PlayerMoveAction> playerMoveListeners = new ArrayList<>();
 
-    public GamePanel (int width, int height, Player player) {
-        this.width = width;
-        this.height = height;
+    public GamePanel (Board board, Player player) {
+        this.board = board;
         this.player = player;
 
         movement.put(player, new MovementData(player));
 
-        setPreferredSize(new Dimension(width * fieldSize, height * fieldSize));
+        setPreferredSize(new Dimension(board.getWidth() * fieldSize, board.getHeight() * fieldSize));
         paintPlayer();
     }
 
@@ -43,7 +41,7 @@ public class GamePanel extends javax.swing.JPanel {
     }
 
     private void paintBackground () {
-        background = createImage(width * fieldSize, height * fieldSize);
+        background = createImage(board.getWidth() * fieldSize, board.getHeight() * fieldSize);
 
         if (background == null) {
             return;
@@ -52,16 +50,26 @@ public class GamePanel extends javax.swing.JPanel {
         Graphics g = background.getGraphics();
 
         g.setColor(Color.lightGray);
-        g.fillRect(0, 0, width * fieldSize, height * fieldSize);
+        g.fillRect(0, 0, board.getWidth() * fieldSize, board.getHeight() * fieldSize);
 
         g.setColor(Color.gray);
 
-        for (int i = 0; i <= width; i++) {
-            g.drawLine(i * fieldSize, 0, i * fieldSize, height * fieldSize);
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
+                if (board.isWall(i, j)) {
+                    g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
+                }
+            }
         }
 
-        for (int i = 0; i <= height; i++) {
-            g.drawLine(0, i * fieldSize, width * fieldSize, i * fieldSize);
+        g.setColor(Color.gray);
+
+        for (int i = 0; i <= board.getWidth(); i++) {
+            g.drawLine(i * fieldSize, 0, i * fieldSize, board.getHeight() * fieldSize);
+        }
+
+        for (int i = 0; i <= board.getHeight(); i++) {
+            g.drawLine(0, i * fieldSize, board.getWidth() * fieldSize, i * fieldSize);
         }
     }
 
@@ -83,7 +91,7 @@ public class GamePanel extends javax.swing.JPanel {
             paintBackground();
         }
 
-        Image foreground = new BufferedImage(width * fieldSize, height * fieldSize, BufferedImage.TYPE_INT_ARGB);
+        Image foreground = new BufferedImage(board.getWidth() * fieldSize, board.getHeight() * fieldSize, BufferedImage.TYPE_INT_ARGB);
         Graphics foregroundGraphics = foreground.getGraphics();
 
         for (Monster monster : monsters.values()) {

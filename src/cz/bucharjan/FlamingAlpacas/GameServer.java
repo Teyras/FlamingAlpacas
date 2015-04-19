@@ -21,8 +21,7 @@ public class GameServer {
 
     private List<Monster> monsters = new ArrayList<>();
     private List<Ally> players = new ArrayList<>();
-    private int width = 50;
-    private int height = 30;
+    private Board board;
 
     private int nextSpriteId = 0;
 
@@ -41,12 +40,27 @@ public class GameServer {
             }
         }).start();
 
+        int width = 50;
+        int height = 30;
+        boolean[][] walls = new boolean[width][height];
+
+        for (int i = 0; i < width; i++) {
+            walls[i][0] = true;
+            walls[i][height - 1] = true;
+        }
+        for (int i = 0; i < height; i++) {
+            walls[0][i] = true;
+            walls[width - 1][i] = true;
+        }
+
         for (int i = 0; i < height / 2; i++) {
             Monster monster = new Monster(getSpriteId());
             monster.setPosition(new Coords(width - 1, i * 2));
             monster.setDirection(Direction.Left);
             monsters.add(monster);
         }
+
+        this.board = new Board(width, height, walls);
 
         new Thread(() -> {
             Map<Sprite, Integer> remaining = new HashMap<Sprite, Integer>();
@@ -155,7 +169,9 @@ public class GameServer {
             playersArray[i++] = new Ally(player);
         }
 
-        StatusUpdate update = new StatusUpdate(++updateNumber, width, height, monstersArray, playersArray);
+        StatusUpdate update = new StatusUpdate(++updateNumber);
+        update.setBoard(board);
+        update.setObjects(monstersArray, playersArray);
 
         for (ClientData data : clients.values()) {
             update.setPlayerId(data.getSprite().getId());
@@ -171,39 +187,39 @@ public class GameServer {
 class StatusUpdate implements Serializable {
     private long number;
 
-    private int boardWidth;
-    private int boardHeight;
-
+    private Board board;
     private Monster[] monsters;
-    private int playerId;
     private Ally[] players;
 
-    public StatusUpdate (long number, int boardWidth, int boardHeight, Monster[] monsters, Ally[] players) {
+    private int playerId;
+
+    public StatusUpdate (long number) {
         this.number = number;
-        this.boardWidth = boardWidth;
-        this.boardHeight = boardHeight;
+    }
+
+    public void setBoard (Board board) {
+        this.board = board;
+    }
+
+    public void setObjects (Monster[] monsters, Ally[] players) {
         this.monsters = monsters;
         this.players = players;
+    }
+
+    public void setPlayerId (int playerId) {
+        this.playerId = playerId;
     }
 
     public long getNumber () {
         return number;
     }
 
-    public int getBoardWidth () {
-        return boardWidth;
-    }
-
-    public int getBoardHeight () {
-        return boardHeight;
+    public Board getBoard () {
+        return board;
     }
 
     public Monster[] getMonsters () {
         return monsters;
-    }
-
-    public void setPlayerId (int playerId) {
-        this.playerId = playerId;
     }
 
     public int getPlayerId () {
