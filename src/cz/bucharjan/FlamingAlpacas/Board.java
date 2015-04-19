@@ -22,11 +22,23 @@ public class Board {
         return height;
     }
 
+    protected boolean isValid (int x, int y) {
+        return x >= 0 && x < width && y >= 0 && y < height;
+    }
+
     public boolean isWall (int x, int y) {
-        return walls[x][y];
+        return isValid(x, y) && walls[x][y];
     }
 
     public boolean isWall (Coords coords) {
         return isWall(coords.getX(), coords.getY());
+    }
+
+    public boolean isFree (int x, int y) {
+        return isValid(x, y) && !isWall(x, y);
+    }
+
+    public boolean isFree (Coords coords) {
+        return isFree(coords.getX(), coords.getY());
     }
 }

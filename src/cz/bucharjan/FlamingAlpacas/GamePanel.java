@@ -130,9 +130,7 @@ public class GamePanel extends javax.swing.JPanel {
         MovementData playerMovement = movement.get(player);
 
         if (playerMovement.isMoving()) {
-            if (playerMovement.addProgress(time)) {
-                player.setPosition(player.getPosition().transform(playerMovement.getDirection()));
-
+            if (addSpriteProgress(player, time)) {
                 for (PlayerMoveAction action : playerMoveListeners) {
                     action.run(playerMovement.getDirection());
                 }
@@ -146,18 +144,28 @@ public class GamePanel extends javax.swing.JPanel {
         }
 
         for (Monster monster : monsters.values()) {
-            MovementData monsterMovement = movement.get(monster);
-            if (monsterMovement.addProgress(time)) {
-                monster.setPosition(monster.getPosition().transform(monsterMovement.getDirection()));
-            }
+            addSpriteProgress(monster, time);
         }
 
         for (Ally ally : allies.values()) {
-            MovementData allyMovement = movement.get(ally);
-            if (allyMovement.addProgress(time)) {
-                ally.setPosition(ally.getPosition().transform(allyMovement.getDirection()));
-            }
+            addSpriteProgress(ally, time);
         }
+    }
+
+    private boolean addSpriteProgress (Sprite sprite, int time) {
+        MovementData data = movement.get(sprite);
+        Coords target = sprite.getPosition().transform(data.getDirection());
+
+        if (!board.isFree(target)) {
+            return false;
+        }
+
+        if (data.isMoving() && data.addProgress(time)) {
+            sprite.setPosition(target);
+            return true;
+        }
+
+        return false;
     }
 
     public synchronized void updateSprites (Monster[] monsters, Ally[] allies) {

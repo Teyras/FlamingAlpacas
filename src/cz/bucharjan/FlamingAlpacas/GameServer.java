@@ -133,6 +133,7 @@ public class GameServer {
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
             Ally sprite = new Ally(getSpriteId());
+            sprite.setPosition(new Coords(1, 1));
             players.add(sprite);
             clients.put(from, new ClientData(from, sprite));
         } else if (message instanceof MoveMessage) {
