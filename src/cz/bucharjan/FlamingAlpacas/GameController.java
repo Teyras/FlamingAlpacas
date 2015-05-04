@@ -7,6 +7,7 @@ import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,7 @@ public class GameController {
 
     public void run () {
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+        Random rand = new Random();
 
         executor.scheduleAtFixedRate(() -> {
             spawnMonsters(board.getHeight() - 2);
@@ -49,6 +51,27 @@ public class GameController {
                 while (newTime <= 0) {
                     newTime += sprite.getTimePerSquare();
                     sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
+
+                    if (board.isFree(sprite.getPosition().transform(Direction.Left))) {
+                        sprite.setDirection(Direction.Left);
+                    } else if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
+                        boolean freeUp = board.isFree(sprite.getPosition().transform(Direction.Up));
+                        boolean freeDown = board.isFree(sprite.getPosition().transform(Direction.Down));
+
+                        if (freeDown && freeUp) {
+                            if (rand.nextInt(2) == 0) {
+                                sprite.setDirection(Direction.Down);
+                            } else {
+                                sprite.setDirection(Direction.Up);
+                            }
+                        } else if (freeDown) {
+                            sprite.setDirection(Direction.Down);
+                        } else if (freeUp) {
+                            sprite.setDirection(Direction.Up);
+                        } else {
+                            sprite.setDirection(Direction.None);
+                        }
+                    }
                 }
 
                 remaining.put(sprite, newTime);
