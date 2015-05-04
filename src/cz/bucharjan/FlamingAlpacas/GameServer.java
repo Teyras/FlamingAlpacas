@@ -34,9 +34,22 @@ public class GameServer {
         int height = 30;
         boolean[][] walls = new boolean[width][height];
 
-        for (int i = 0; i < width; i++) {
-            walls[i][0] = true;
-            walls[i][height - 1] = true;
+        Random rand = new Random();
+
+        for (int i = 1; i < width - 1; i += 2) {
+            boolean passable = false;
+
+            for (int j = 0; j < height; j++) {
+                if (rand.nextDouble() < 0.65) {
+                    walls[i][j] = true;
+                } else {
+                    passable = true;
+                }
+            }
+
+            if (!passable) {
+                walls[i][rand.nextInt(height)] = true;
+            }
         }
 
         this.board = new Board(width, height, walls);
