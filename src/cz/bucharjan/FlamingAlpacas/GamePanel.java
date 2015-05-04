@@ -3,6 +3,7 @@ package cz.bucharjan.FlamingAlpacas;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,7 +85,7 @@ public class GamePanel extends javax.swing.JPanel {
     }
 
     @Override
-    protected void paintComponent (Graphics g) {
+    protected synchronized void paintComponent (Graphics g) {
         super.paintComponent(g);
 
         if (background == null) {
@@ -185,6 +186,17 @@ public class GamePanel extends javax.swing.JPanel {
             monster.setDirection(newMonster.getDirection());
             monster.setPosition(newMonster.getPosition());
             this.movement.get(monster).setDirection(newMonster.getDirection());
+        }
+
+        java.util.List<Monster> deadMonsters = new ArrayList<>();
+        for (Monster monster : this.monsters.values()) {
+            if (!Arrays.asList(monsters).contains(monster)) {
+                deadMonsters.add(monster);
+            }
+        }
+
+        for (Monster monster : deadMonsters) {
+            this.monsters.remove(monster.getId());
         }
 
         for (Ally newAlly : allies) {

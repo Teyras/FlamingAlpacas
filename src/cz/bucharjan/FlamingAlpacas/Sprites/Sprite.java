@@ -56,4 +56,8 @@ public abstract class Sprite implements Serializable {
     public int getTimePerSquare () {
         return 200;
     }
+
+    public boolean equals (Object o) {
+        return o != null && o instanceof Sprite && ((Sprite) o).getId() == id;
+    }
 }

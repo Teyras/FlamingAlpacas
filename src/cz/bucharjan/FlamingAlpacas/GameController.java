@@ -141,6 +141,30 @@ public class GameController {
         return monstersArray;
     }
 
+    public void startShot (Ally player, Coords origin) {
+        Coords field = origin;
+        Monster victim = null;
+
+        while (board.isFree(field)) {
+            for (Monster monster : monsters) {
+                if (monster.getPosition().equals(field)) {
+                    victim = monster;
+                    break;
+                }
+            }
+
+            if (victim != null) {
+                break;
+            }
+
+            field = field.transform(Direction.Right);
+        }
+
+        if (victim != null) {
+            monsters.remove(victim);
+        }
+    }
+
     protected int getSpriteId () {
         return nextSpriteId++;
     }

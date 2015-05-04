@@ -1,6 +1,7 @@
 package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
+import cz.bucharjan.FlamingAlpacas.Messages.ShootMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Player;
@@ -79,6 +80,11 @@ public class MainWindow {
         }, 0, 1, TimeUnit.SECONDS);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_SPACE) {
+                serverIface.sendMessage(new ShootMessage(player.getPosition()));
+                return false;
+            }
+
             Direction direction = keyToDirection(e);
 
             if (direction == Direction.None) {

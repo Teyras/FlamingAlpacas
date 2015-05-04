@@ -2,6 +2,7 @@ package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Messages.ConnectMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
+import cz.bucharjan.FlamingAlpacas.Messages.ShootMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
@@ -100,22 +101,22 @@ public class GameServer {
         if (message instanceof ConnectMessage) {
             Ally sprite = controller.spawnPlayer();
             clients.put(from, new ClientData(from, sprite));
-        } else if (message instanceof MoveMessage) {
-            ClientData data = clients.get(from);
-            if (data == null) {
-                return;
-            }
+            return;
+        }
 
+        ClientData data = clients.get(from);
+        if (data == null) {
+            return;
+        }
+
+        if (message instanceof MoveMessage) {
             Ally sprite = data.getSprite();
             sprite.transformPosition(((MoveMessage) message).getDirection());
         } else if (message instanceof SteerMessage) {
-            ClientData data = clients.get(from);
-            if (data == null) {
-                return;
-            }
-
             Ally sprite = data.getSprite();
             sprite.setDirection(((SteerMessage) message).getDirection());
+        } else if (message instanceof ShootMessage) {
+            controller.startShot(data.getSprite(), ((ShootMessage) message).getOrigin());
         }
     }
 
