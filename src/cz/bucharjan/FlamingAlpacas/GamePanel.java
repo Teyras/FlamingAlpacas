@@ -1,11 +1,11 @@
 package cz.bucharjan.FlamingAlpacas;
 
-import java.awt.*;
+import java.awt.Image;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import cz.bucharjan.FlamingAlpacas.Sprites.*;
 
@@ -22,6 +22,8 @@ public class GamePanel extends javax.swing.JPanel {
 
     private Map<Integer, Monster> monsters = new HashMap<>();
     private Map<Integer, Ally> allies = new HashMap<>();
+    private Set<Projectile> projectiles = new HashSet<>();
+
     private Map<Sprite, MovementData> movement = new HashMap<>();
     private Map<Sprite, Image> spriteImages = new HashMap<>();
 
@@ -103,6 +105,10 @@ public class GamePanel extends javax.swing.JPanel {
             paintSprite(foregroundGraphics, ally);
         }
 
+        for (Projectile projectile : projectiles) {
+            paintSprite(foregroundGraphics, projectile);
+        }
+
         paintSprite(foregroundGraphics, player);
 
         g.drawImage(background, 0, 0, null);
@@ -151,11 +157,25 @@ public class GamePanel extends javax.swing.JPanel {
         for (Ally ally : allies.values()) {
             addSpriteProgress(ally, time);
         }
+
+        List<Projectile> stoppedProjectiles = new ArrayList<>();
+
+        for (Projectile projectile : projectiles) {
+            MovementData data = movement.get(projectile);
+            addSpriteProgress(projectile, time);
+            if (data.canStop() && !board.isFree(data.getTarget())) {
+                stoppedProjectiles.add(projectile);
+            }
+        }
+
+        for (Projectile projectile : stoppedProjectiles) {
+            projectiles.remove(projectile);
+        }
     }
 
     private boolean addSpriteProgress (Sprite sprite, int time) {
         MovementData data = movement.get(sprite);
-        Coords target = sprite.getPosition().transform(data.getDirection());
+        Coords target = data.getTarget();
 
         if (!board.isFree(target)) {
             return false;
@@ -169,7 +189,7 @@ public class GamePanel extends javax.swing.JPanel {
         return false;
     }
 
-    public synchronized void updateSprites (Monster[] monsters, Ally[] allies) {
+    public synchronized void updateSprites (Monster[] monsters, Ally[] allies, Projectile[] projectiles) {
         for (Monster newMonster : monsters) {
             Monster monster = this.monsters.get(newMonster.getId());
             if (monster == null) {
@@ -220,6 +240,18 @@ public class GamePanel extends javax.swing.JPanel {
             ally.setPosition(newAlly.getPosition());
             this.movement.get(ally).setDirection(newAlly.getDirection());
         }
+
+        for (Projectile newProjectile : projectiles) {
+            if (newProjectile.getOwnerId() == player.getId()) {
+                continue; // Player's projectiles are handled locally
+            }
+
+            if (!this.projectiles.contains(newProjectile)) {
+                this.projectiles.add(newProjectile);
+                paintProjectile(newProjectile);
+                movement.put(newProjectile, new MovementData(newProjectile));
+            }
+        }
     }
 
     private void paintMonster (Monster monster) {
@@ -242,10 +274,30 @@ public class GamePanel extends javax.swing.JPanel {
         spriteImages.put(ally, image);
     }
 
+    private void paintProjectile (Projectile projectile) {
+        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics g = image.getGraphics();
+        g.setColor(Color.yellow);
+        g.fillOval(fieldSize / 2, fieldSize / 4, fieldSize / 2, fieldSize / 2);
+
+        spriteImages.put(projectile, image);
+    }
+
     public int resetFrameCount () {
         int value = frameCount;
         frameCount = 0;
         return value;
+    }
+
+    public void addProjectile (Coords position) {
+        Projectile projectile = new Projectile();
+        projectile.setDirection(Direction.Right);
+        projectile.setPosition(position);
+
+        paintProjectile(projectile);
+        projectiles.add(projectile);
+        movement.put(projectile, new MovementData(projectile));
     }
 }
 
@@ -258,6 +310,7 @@ class MovementData {
 
     public MovementData (Sprite sprite) {
         this.sprite = sprite;
+        this.direction = sprite.getDirection();
     }
 
     public void setDirection (Direction direction) {
@@ -313,6 +366,10 @@ class MovementData {
 
     public void clearProgress () {
         this.progress = 0;
+    }
+
+    public Coords getTarget () {
+        return sprite.getPosition().transform(direction);
     }
 }
 

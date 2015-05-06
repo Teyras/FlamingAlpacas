@@ -2,12 +2,10 @@ package cz.bucharjan.FlamingAlpacas;
 
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
+import cz.bucharjan.FlamingAlpacas.Sprites.Projectile;
 import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +17,7 @@ public class GameController {
     private Board board;
     private final List<Monster> monsters;
     private final List<Ally> players;
+    private final List<Projectile> projectiles = new ArrayList<>();
 
     private int nextSpriteId = 0;
 
@@ -36,15 +35,16 @@ public class GameController {
             spawnMonsters(board.getHeight() - 2);
         }, 0, 10, TimeUnit.SECONDS);
 
-        Map<Sprite, Integer> remaining = new HashMap<>();
-        int period = 100;
+        final int period = 100;
+        final Map<Sprite, Integer> monstersRemaining = new HashMap<>();
 
         executor.scheduleAtFixedRate(() -> {
+
             for (Monster monster : monsters) {
-                remaining.putIfAbsent(monster, monster.getTimePerSquare());
+                monstersRemaining.putIfAbsent(monster, monster.getTimePerSquare());
             }
 
-            for (Map.Entry<Sprite, Integer> entry : remaining.entrySet()) {
+            for (Map.Entry<Sprite, Integer> entry : monstersRemaining.entrySet()) {
                 Integer newTime = entry.getValue() - period;
 
                 Sprite sprite = entry.getKey();
@@ -74,9 +74,41 @@ public class GameController {
                     }
                 }
 
-                remaining.put(sprite, newTime);
+                monstersRemaining.put(sprite, newTime);
             }
         }, 0, period, TimeUnit.MILLISECONDS);
+
+        final int projectilePeriod = 50;
+        final Map<Projectile, Integer> projectilesRemaining = new HashMap<>();
+
+        executor.scheduleAtFixedRate(() -> {
+            for (Projectile projectile : projectiles) {
+                projectilesRemaining.putIfAbsent(projectile, projectile.getTimePerSquare());
+            }
+
+            List<Projectile> stoppedProjectiles = new ArrayList<>();
+
+            for (Map.Entry<Projectile, Integer> entry : projectilesRemaining.entrySet()) {
+                Integer newTime = entry.getValue() - projectilePeriod;
+
+                Projectile sprite = entry.getKey();
+                while (newTime <= 0) {
+                    newTime += sprite.getTimePerSquare();
+                    sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
+
+                    if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
+                        stoppedProjectiles.add(sprite);
+                        break;
+                    }
+                }
+
+                projectilesRemaining.put(sprite, newTime);
+            }
+
+            for (Projectile projectile : stoppedProjectiles) {
+                projectiles.remove(projectile);
+            }
+        }, 0, projectilePeriod, TimeUnit.MILLISECONDS);
     }
 
     private void placeSprite (Sprite sprite, List<? extends Sprite> others, int col) {
@@ -163,9 +195,25 @@ public class GameController {
         if (victim != null) {
             monsters.remove(victim);
         }
+
+        Projectile projectile = new Projectile(getSpriteId(), player.getId());
+        projectile.setDirection(Direction.Right);
+        projectile.setPosition(origin);
+        projectiles.add(projectile);
     }
 
     protected int getSpriteId () {
         return nextSpriteId++;
+    }
+
+    public Projectile[] getProjectilesCopy () {
+        Projectile[] projectilesArray = new Projectile[projectiles.size()];
+        int i = 0;
+
+        for (Projectile projectile : projectiles) {
+            projectilesArray[i++] = new Projectile(projectile);
+        }
+
+        return projectilesArray;
     }
 }

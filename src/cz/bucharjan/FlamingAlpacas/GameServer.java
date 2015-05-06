@@ -6,6 +6,7 @@ import cz.bucharjan.FlamingAlpacas.Messages.ShootMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
 import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
+import cz.bucharjan.FlamingAlpacas.Sprites.Projectile;
 
 import java.io.*;
 import java.net.*;
@@ -123,7 +124,7 @@ public class GameServer {
     public synchronized void updateClients () {
         StatusUpdate update = new StatusUpdate(++updateNumber);
         update.setBoard(board);
-        update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy());
+        update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy(), controller.getProjectilesCopy());
 
         for (ClientData data : clients.values()) {
             update.setPlayerId(data.getSprite().getId());
@@ -138,6 +139,7 @@ class StatusUpdate implements Serializable {
     private Board board;
     private Monster[] monsters;
     private Ally[] players;
+    private Projectile[] projectiles;
 
     private int playerId;
 
@@ -149,9 +151,10 @@ class StatusUpdate implements Serializable {
         this.board = board;
     }
 
-    public void setObjects (Monster[] monsters, Ally[] players) {
+    public void setObjects (Monster[] monsters, Ally[] players, Projectile[] projectiles) {
         this.monsters = monsters;
         this.players = players;
+        this.projectiles = projectiles;
     }
 
     public void setPlayerId (int playerId) {
@@ -174,8 +177,12 @@ class StatusUpdate implements Serializable {
         return playerId;
     }
 
-    public Ally[] getPlayers() {
+    public Ally[] getPlayers () {
         return players;
+    }
+
+    public Projectile[] getProjectiles () {
+        return projectiles;
     }
 }
 

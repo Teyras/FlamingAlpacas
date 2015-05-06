@@ -43,7 +43,7 @@ public class MainWindow {
                 setupUI(update.getBoard());
             }
 
-            panel.updateSprites(update.getMonsters(), update.getPlayers());
+            panel.updateSprites(update.getMonsters(), update.getPlayers(), update.getProjectiles());
             panel.repaint();
         });
 
@@ -81,6 +81,7 @@ public class MainWindow {
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher((KeyEvent e) -> {
             if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_SPACE) {
+                panel.addProjectile(player.getPosition());
                 serverIface.sendMessage(new ShootMessage(player.getPosition()));
                 return false;
             }
