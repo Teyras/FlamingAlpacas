@@ -39,42 +39,43 @@ public class GameController {
         final Map<Sprite, Integer> monstersRemaining = new HashMap<>();
 
         executor.scheduleAtFixedRate(() -> {
-
-            for (Monster monster : monsters) {
-                monstersRemaining.putIfAbsent(monster, monster.getTimePerSquare());
-            }
-
-            for (Map.Entry<Sprite, Integer> entry : monstersRemaining.entrySet()) {
-                Integer newTime = entry.getValue() - period;
-
-                Sprite sprite = entry.getKey();
-                while (newTime <= 0) {
-                    newTime += sprite.getTimePerSquare();
-                    sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
-
-                    if (board.isFree(sprite.getPosition().transform(Direction.Left))) {
-                        sprite.setDirection(Direction.Left);
-                    } else if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
-                        boolean freeUp = board.isFree(sprite.getPosition().transform(Direction.Up));
-                        boolean freeDown = board.isFree(sprite.getPosition().transform(Direction.Down));
-
-                        if (freeDown && freeUp) {
-                            if (rand.nextInt(2) == 0) {
-                                sprite.setDirection(Direction.Down);
-                            } else {
-                                sprite.setDirection(Direction.Up);
-                            }
-                        } else if (freeDown) {
-                            sprite.setDirection(Direction.Down);
-                        } else if (freeUp) {
-                            sprite.setDirection(Direction.Up);
-                        } else {
-                            sprite.setDirection(Direction.None);
-                        }
-                    }
+            synchronized (monsters) {
+                for (Monster monster : monsters) {
+                    monstersRemaining.putIfAbsent(monster, monster.getTimePerSquare());
                 }
 
-                monstersRemaining.put(sprite, newTime);
+                for (Map.Entry<Sprite, Integer> entry : monstersRemaining.entrySet()) {
+                    Integer newTime = entry.getValue() - period;
+                    Sprite sprite = entry.getKey();
+
+                    while (newTime <= 0) {
+                        newTime += sprite.getTimePerSquare();
+                        sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
+
+                        if (board.isFree(sprite.getPosition().transform(Direction.Left))) {
+                            sprite.setDirection(Direction.Left);
+                        } else if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
+                            boolean freeUp = board.isFree(sprite.getPosition().transform(Direction.Up));
+                            boolean freeDown = board.isFree(sprite.getPosition().transform(Direction.Down));
+
+                            if (freeDown && freeUp) {
+                                if (rand.nextInt(2) == 0) {
+                                    sprite.setDirection(Direction.Down);
+                                } else {
+                                    sprite.setDirection(Direction.Up);
+                                }
+                            } else if (freeDown) {
+                                sprite.setDirection(Direction.Down);
+                            } else if (freeUp) {
+                                sprite.setDirection(Direction.Up);
+                            } else {
+                                sprite.setDirection(Direction.None);
+                            }
+                        }
+                    }
+
+                    monstersRemaining.put(sprite, newTime);
+                }
             }
         }, 0, period, TimeUnit.MILLISECONDS);
 
@@ -82,31 +83,47 @@ public class GameController {
         final Map<Projectile, Integer> projectilesRemaining = new HashMap<>();
 
         executor.scheduleAtFixedRate(() -> {
-            for (Projectile projectile : projectiles) {
-                projectilesRemaining.putIfAbsent(projectile, projectile.getTimePerSquare());
-            }
-
-            List<Projectile> stoppedProjectiles = new ArrayList<>();
-
-            for (Map.Entry<Projectile, Integer> entry : projectilesRemaining.entrySet()) {
-                Integer newTime = entry.getValue() - projectilePeriod;
-
-                Projectile sprite = entry.getKey();
-                while (newTime <= 0) {
-                    newTime += sprite.getTimePerSquare();
-                    sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
-
-                    if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
-                        stoppedProjectiles.add(sprite);
-                        break;
-                    }
+            synchronized (monsters) {
+                for (Projectile projectile : projectiles) {
+                    projectilesRemaining.putIfAbsent(projectile, projectile.getTimePerSquare());
                 }
 
-                projectilesRemaining.put(sprite, newTime);
-            }
+                List<Projectile> stoppedProjectiles = new ArrayList<>();
+                List<Monster> deadMonsters = new ArrayList<>();
 
-            for (Projectile projectile : stoppedProjectiles) {
-                projectiles.remove(projectile);
+                for (Map.Entry<Projectile, Integer> entry : projectilesRemaining.entrySet()) {
+                    Integer newTime = entry.getValue() - projectilePeriod;
+                    Projectile projectile = entry.getKey();
+
+                    while (newTime <= 0) {
+                        newTime += projectile.getTimePerSquare();
+                        projectile.setPosition(projectile.getPosition().transform(projectile.getDirection()));
+
+                        for (Monster monster : monsters) {
+                            if (monster.getPosition().equals(projectile.getPosition())) {
+                                deadMonsters.add(monster);
+                                stoppedProjectiles.add(projectile);
+                                break;
+                            }
+                        }
+
+                        if (!board.isFree(projectile.getPosition().transform(projectile.getDirection()))) {
+                            stoppedProjectiles.add(projectile);
+                            break;
+                        }
+                    }
+
+                    projectilesRemaining.put(projectile, newTime);
+                }
+
+                for (Projectile projectile : stoppedProjectiles) {
+                    projectiles.remove(projectile);
+                    projectilesRemaining.remove(projectile);
+                }
+
+                for (Monster monster : deadMonsters) {
+                    monsters.remove(monster);
+                }
             }
         }, 0, projectilePeriod, TimeUnit.MILLISECONDS);
     }
@@ -136,11 +153,13 @@ public class GameController {
     }
 
     public void spawnMonsters (int count) {
-        for (int i = 0; i < count; i++) {
-            Monster monster = new Monster(getSpriteId());
-            monsters.add(monster);
-            placeSprite(monster, monsters, board.getWidth() - 1);
-            monster.setDirection(Direction.Left);
+        synchronized (monsters) {
+            for (int i = 0; i < count; i++) {
+                Monster monster = new Monster(getSpriteId());
+                monsters.add(monster);
+                placeSprite(monster, monsters, board.getWidth() - 1);
+                monster.setDirection(Direction.Left);
+            }
         }
     }
 
@@ -163,37 +182,21 @@ public class GameController {
     }
 
     public Monster[] getMonstersCopy () {
-        Monster[] monstersArray = new Monster[monsters.size()];
-        int i = 0;
+        synchronized (monsters) {
+            Monster[] monstersArray = new Monster[monsters.size()];
+            int i = 0;
 
-        for (Monster monster : monsters) {
-            monstersArray[i++] = new Monster(monster);
+            for (Monster monster : monsters) {
+                monstersArray[i++] = new Monster(monster);
+            }
+
+            return monstersArray;
         }
-
-        return monstersArray;
     }
 
     public void startShot (Ally player, Coords origin) {
-        Coords field = origin;
-        Monster victim = null;
-
-        while (board.isFree(field)) {
-            for (Monster monster : monsters) {
-                if (monster.getPosition().equals(field)) {
-                    victim = monster;
-                    break;
-                }
-            }
-
-            if (victim != null) {
-                break;
-            }
-
-            field = field.transform(Direction.Right);
-        }
-
-        if (victim != null) {
-            monsters.remove(victim);
+        if (!board.isFree(origin.transform(Direction.Right))) {
+            return;
         }
 
         Projectile projectile = new Projectile(getSpriteId(), player.getId());
