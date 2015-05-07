@@ -5,7 +5,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
+import javax.imageio.ImageIO;
 
 import cz.bucharjan.FlamingAlpacas.Sprites.*;
 
@@ -17,7 +20,6 @@ public class GamePanel extends javax.swing.JPanel {
     Board board;
 
     private Player player;
-    private Image image;
     private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
@@ -77,13 +79,25 @@ public class GamePanel extends javax.swing.JPanel {
     }
 
     private void paintPlayer () {
-        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage alpaca = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        URL resource = FlamingAlpacas.class.getResource("/alpaca.png");
+        Image data;
 
-        Graphics g = image.getGraphics();
-        g.setColor(Color.blue);
-        g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+        try {
+            data = ImageIO.read(resource).getScaledInstance(fieldSize - 2, fieldSize - 1, Image.SCALE_SMOOTH);
+        } catch (IOException e) {
+            return;
+        }
 
-        spriteImages.put(player, image);
+        Graphics g = alpaca.getGraphics();
+        g.drawImage(
+                data,
+                (fieldSize - data.getWidth(null)) / 2,
+                (fieldSize - data.getHeight(null)),
+                null
+        );
+
+        spriteImages.put(player, alpaca);
     }
 
     @Override
@@ -255,27 +269,51 @@ public class GamePanel extends javax.swing.JPanel {
     }
 
     private void paintMonster (Monster monster) {
-        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        URL resource = FlamingAlpacas.class.getResource("/tree.png");
+        Image data;
+
+        try {
+            data = ImageIO.read(resource).getScaledInstance(fieldSize - 2, fieldSize - 1, Image.SCALE_SMOOTH);
+        } catch (IOException e) {
+            return;
+        }
 
         Graphics g = image.getGraphics();
-        g.setColor(Color.red);
-        g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+        g.drawImage(
+                data,
+                (fieldSize - data.getWidth(null)) / 2,
+                (fieldSize - data.getHeight(null)),
+                null
+        );
 
         spriteImages.put(monster, image);
     }
 
     private void paintAlly (Ally ally) {
-        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage alpaca = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        URL resource = FlamingAlpacas.class.getResource("/ally.png");
+        Image data;
 
-        Graphics g = image.getGraphics();
-        g.setColor(Color.green);
-        g.fillOval(1, 1, fieldSize - 2, fieldSize - 2);
+        try {
+            data = ImageIO.read(resource).getScaledInstance(fieldSize - 2, fieldSize - 1, Image.SCALE_SMOOTH);
+        } catch (IOException e) {
+            return;
+        }
 
-        spriteImages.put(ally, image);
+        Graphics g = alpaca.getGraphics();
+        g.drawImage(
+                data,
+                (fieldSize - data.getWidth(null)) / 2,
+                (fieldSize - data.getHeight(null)),
+                null
+        );
+
+        spriteImages.put(ally, alpaca);
     }
 
     private void paintProjectile (Projectile projectile) {
-        image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
 
         Graphics g = image.getGraphics();
         g.setColor(Color.yellow);
