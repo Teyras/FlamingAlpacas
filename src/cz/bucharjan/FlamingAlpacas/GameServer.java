@@ -23,12 +23,10 @@ public class GameServer {
     private Map<Client, ClientData> clients = new HashMap<>();
     private long updateNumber;
 
-    private GameController controller;
-
+    private GameController controller = new GameController();
 
     public GameServer (int port) {
         this.port = port;
-        this.controller = new GameController();
     }
 
     public void serve () {
