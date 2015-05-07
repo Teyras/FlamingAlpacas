@@ -23,39 +23,12 @@ public class GameServer {
     private Map<Client, ClientData> clients = new HashMap<>();
     private long updateNumber;
 
-    private final List<Monster> monsters = new ArrayList<>();
-    private final List<Ally> players = new ArrayList<>();
-    private Board board;
     private GameController controller;
 
 
     public GameServer (int port) {
         this.port = port;
-
-        int width = 50;
-        int height = 30;
-        boolean[][] walls = new boolean[width][height];
-
-        Random rand = new Random();
-
-        for (int i = 1; i < width - 1; i += 2) {
-            boolean passable = false;
-
-            for (int j = 0; j < height; j++) {
-                if (rand.nextDouble() < 0.65) {
-                    walls[i][j] = true;
-                } else {
-                    passable = true;
-                }
-            }
-
-            if (!passable) {
-                walls[i][rand.nextInt(height)] = true;
-            }
-        }
-
-        this.board = new Board(width, height, walls);
-        this.controller = new GameController(board, monsters, players);
+        this.controller = new GameController();
     }
 
     public void serve () {
@@ -123,7 +96,7 @@ public class GameServer {
 
     public synchronized void updateClients () {
         StatusUpdate update = new StatusUpdate(++updateNumber);
-        update.setBoard(board);
+        update.setBoard(controller.getBoard());
         update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy(), controller.getProjectilesCopy());
 
         for (ClientData data : clients.values()) {

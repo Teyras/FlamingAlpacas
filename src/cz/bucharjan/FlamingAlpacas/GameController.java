@@ -15,16 +15,40 @@ import java.util.concurrent.TimeUnit;
  */
 public class GameController {
     private Board board;
-    private final List<Monster> monsters;
-    private final List<Ally> players;
+    private final List<Monster> monsters = new ArrayList<>();
+    private final List<Ally> players = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
 
     private int nextSpriteId = 0;
 
-    public GameController (Board board, List<Monster> monsters, List<Ally> players) {
-        this.board = board;
-        this.monsters = monsters;
-        this.players = players;
+    public GameController () {
+        int width = 50;
+        int height = 30;
+        boolean[][] walls = new boolean[width][height];
+
+        Random rand = new Random();
+
+        for (int i = 1; i < width - 1; i += 2) {
+            boolean passable = false;
+
+            for (int j = 0; j < height; j++) {
+                if (rand.nextDouble() < 0.65) {
+                    walls[i][j] = true;
+                } else {
+                    passable = true;
+                }
+            }
+
+            if (!passable) {
+                walls[i][rand.nextInt(height)] = true;
+            }
+        }
+
+        this.board = new Board(width, height, walls);
+    }
+
+    public Board getBoard () {
+        return board;
     }
 
     public void run () {
