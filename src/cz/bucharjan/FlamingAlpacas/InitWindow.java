@@ -15,6 +15,7 @@ public class InitWindow {
     private List<SubmitAction> submitListeners = new ArrayList<SubmitAction>();
     private TextField address;
     private TextField port;
+    private TextField nickname;
     private Checkbox server;
 
     public InitWindow () {
@@ -30,6 +31,7 @@ public class InitWindow {
         address = new TextField();
         port = new TextField();
         server = new Checkbox();
+        nickname = new TextField();
 
         Button submit = new Button("OK");
         submit.addActionListener((event) -> {
@@ -51,6 +53,9 @@ public class InitWindow {
 
         form.add(new Label("Server address"));
         form.add(address);
+
+        form.add(new Label("Nickname"));
+        form.add(nickname);
 
         pane.add(form, BorderLayout.CENTER);
         pane.add(submit, BorderLayout.SOUTH);
@@ -82,6 +87,8 @@ public class InitWindow {
         } catch (UnknownHostException e) {
 
         }
+
+        config.nickname = nickname.getText();
 
         return config;
     }

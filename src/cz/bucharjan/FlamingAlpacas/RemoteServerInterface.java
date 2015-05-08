@@ -27,8 +27,8 @@ public class RemoteServerInterface implements ServerInterface {
     }
 
     @Override
-    public void connect () {
-        sendMessage(new ConnectMessage());
+    public void connect (String nickname) {
+        sendMessage(new ConnectMessage(nickname));
 
         new Thread(()-> {
             DatagramPacket packet = new DatagramPacket(new byte[65536], 65536, sockaddr);

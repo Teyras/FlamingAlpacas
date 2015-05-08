@@ -77,7 +77,7 @@ public class GameServer {
 
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
-            Player sprite = controller.spawnPlayer();
+            Player sprite = controller.spawnPlayer(((ConnectMessage) message).getNickname());
             clients.put(from, new ClientData(from, sprite));
             return;
         }

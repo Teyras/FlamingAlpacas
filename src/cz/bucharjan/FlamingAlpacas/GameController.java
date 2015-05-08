@@ -200,8 +200,8 @@ public class GameController {
         }
     }
 
-    public Player spawnPlayer () {
-        Player sprite = new Player(getSpriteId());
+    public Player spawnPlayer (String nickname) {
+        Player sprite = new Player(getSpriteId(), nickname);
         players.add(sprite);
         score.put(sprite, 0);
         placeSprite(sprite, players, 0);
@@ -265,6 +265,7 @@ public class GameController {
         for (Map.Entry<Player, Integer> entry : score.entrySet()) {
             result[i] = new ScoreEntry();
             result[i].id = entry.getKey().getId();
+            result[i].nickname = entry.getKey().getNickname();
             result[i].score = entry.getValue();
             i++;
         }
@@ -275,5 +276,6 @@ public class GameController {
 
 class ScoreEntry implements Serializable {
     public int id;
+    public String nickname;
     public int score;
 }

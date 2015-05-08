@@ -26,7 +26,7 @@ public class MainWindow {
 
     JLabel scoreText;
 
-    public MainWindow (ServerInterface serverInterface) {
+    public MainWindow (String nickname, ServerInterface serverInterface) {
         serverIface = serverInterface;
 
         serverIface.addUpdateListener((StatusUpdate update) -> {
@@ -52,7 +52,7 @@ public class MainWindow {
                     builder.append(", ");
                 }
 
-                builder.append(String.format("%d: %d", entry.id, entry.score));
+                builder.append(String.format("%s: %d", entry.nickname, entry.score));
             }
 
             scoreText.setText(builder.toString());
@@ -69,7 +69,7 @@ public class MainWindow {
             panel.repaint();
         });
 
-        serverIface.connect();
+        serverIface.connect(nickname);
 
         JFrame.setDefaultLookAndFeelDecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

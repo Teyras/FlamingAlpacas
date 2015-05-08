@@ -19,8 +19,8 @@ public class LocalServerInterface implements ServerInterface, Client {
     }
 
     @Override
-    public void connect () {
-        sendMessage(new ConnectMessage());
+    public void connect (String nickname) {
+        sendMessage(new ConnectMessage(nickname));
     }
 
     @Override

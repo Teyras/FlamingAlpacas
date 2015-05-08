@@ -26,6 +26,6 @@ public class FlamingAlpacas {
             serverInterface = new RemoteServerInterface(config.address, config.port);
         }
 
-        MainWindow window = new MainWindow(serverInterface);
+        MainWindow window = new MainWindow(config.nickname, serverInterface);
     }
 }
