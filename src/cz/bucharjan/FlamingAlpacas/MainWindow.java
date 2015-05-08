@@ -3,8 +3,8 @@ package cz.bucharjan.FlamingAlpacas;
 import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.ShootMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
-import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
 import cz.bucharjan.FlamingAlpacas.Sprites.Player;
+import cz.bucharjan.FlamingAlpacas.Sprites.PlayerAvatar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +21,7 @@ public class MainWindow {
     ServerInterface serverIface;
     GamePanel panel;
     boolean connected = false;
-    Player player = null;
+    PlayerAvatar player = null;
     final JFrame frame = new JFrame("Flaming Alpacas");
 
     JLabel scoreText;
@@ -31,9 +31,9 @@ public class MainWindow {
 
         serverIface.addUpdateListener((StatusUpdate update) -> {
             if (!connected) {
-                for (Ally player : update.getPlayers()) {
+                for (Player player : update.getPlayers()) {
                     if (player.getId() == update.getPlayerId()) {
-                        this.player = new Player(player);
+                        this.player = new PlayerAvatar(player);
                     }
                 }
 

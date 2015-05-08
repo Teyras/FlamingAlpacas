@@ -18,12 +18,12 @@ public class GamePanel extends javax.swing.JPanel {
 
     Board board;
 
-    private Player player;
+    private PlayerAvatar player;
     private boolean finished = false;
     private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
-    private Map<Integer, Ally> allies = new HashMap<>();
+    private Map<Integer, Player> allies = new HashMap<>();
     private Set<Projectile> projectiles = new HashSet<>();
 
     private Map<Sprite, MovementData> movement = new HashMap<>();
@@ -31,7 +31,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     private java.util.List<PlayerMoveAction> playerMoveListeners = new ArrayList<>();
 
-    public GamePanel (Board board, Player player) {
+    public GamePanel (Board board, PlayerAvatar player) {
         this.board = board;
         this.player = player;
 
@@ -120,7 +120,7 @@ public class GamePanel extends javax.swing.JPanel {
             paintSprite(foregroundGraphics, monster);
         }
 
-        for (Ally ally : allies.values()) {
+        for (Player ally : allies.values()) {
             paintSprite(foregroundGraphics, ally);
         }
 
@@ -192,7 +192,7 @@ public class GamePanel extends javax.swing.JPanel {
             addSpriteProgress(monster, time);
         }
 
-        for (Ally ally : allies.values()) {
+        for (Player ally : allies.values()) {
             addSpriteProgress(ally, time);
         }
 
@@ -233,7 +233,7 @@ public class GamePanel extends javax.swing.JPanel {
         finished = true;
     }
 
-    public synchronized void updateSprites (Monster[] monsters, Ally[] allies, Projectile[] projectiles) {
+    public synchronized void updateSprites (Monster[] monsters, Player[] allies, Projectile[] projectiles) {
         for (Monster newMonster : monsters) {
             Monster monster = this.monsters.get(newMonster.getId());
             if (monster == null) {
@@ -263,8 +263,8 @@ public class GamePanel extends javax.swing.JPanel {
             this.monsters.remove(monster.getId());
         }
 
-        for (Ally newAlly : allies) {
-            Ally ally = this.allies.get(newAlly.getId());
+        for (Player newAlly : allies) {
+            Player ally = this.allies.get(newAlly.getId());
             if (ally == null) {
                 if (newAlly.getId() == player.getId()) {
                     continue;
@@ -320,7 +320,7 @@ public class GamePanel extends javax.swing.JPanel {
         spriteImages.put(monster, image);
     }
 
-    private void paintAlly (Ally ally) {
+    private void paintAlly (Player ally) {
         BufferedImage alpaca = new BufferedImage(fieldSize, fieldSize, BufferedImage.TYPE_INT_ARGB);
         URL resource = FlamingAlpacas.class.getResource("/ally.png");
         Image data;

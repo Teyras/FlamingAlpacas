@@ -1,6 +1,6 @@
 package cz.bucharjan.FlamingAlpacas;
 
-import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
+import cz.bucharjan.FlamingAlpacas.Sprites.Player;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
 import cz.bucharjan.FlamingAlpacas.Sprites.Projectile;
 import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 public class GameController {
     private Board board;
     private final List<Monster> monsters = new ArrayList<>();
-    private final List<Ally> players = new ArrayList<>();
+    private final List<Player> players = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
 
     private int nextSpriteId = 0;
     private boolean finished = false;
-    private Map<Ally, Integer> score = new HashMap<>();
+    private Map<Player, Integer> score = new HashMap<>();
 
     public GameController () {
         int width = 50;
@@ -137,7 +137,7 @@ public class GameController {
                         for (Monster monster : monsters) {
                             if (monster.getPosition().equals(projectile.getPosition())) {
                                 deadMonsters.add(monster);
-                                Ally owner = projectile.getOwner();
+                                Player owner = projectile.getOwner();
                                 score.put(owner, score.getOrDefault(owner, 0) + 1);
                                 stoppedProjectiles.add(projectile);
                                 break;
@@ -200,20 +200,20 @@ public class GameController {
         }
     }
 
-    public Ally spawnPlayer () {
-        Ally sprite = new Ally(getSpriteId());
+    public Player spawnPlayer () {
+        Player sprite = new Player(getSpriteId());
         players.add(sprite);
         score.put(sprite, 0);
         placeSprite(sprite, players, 0);
         return sprite;
     }
 
-    public Ally[] getPlayersCopy () {
-        Ally[] playersArray = new Ally[players.size()];
+    public Player[] getPlayersCopy () {
+        Player[] playersArray = new Player[players.size()];
         int i = 0;
 
-        for (Ally player : players) {
-            playersArray[i++] = new Ally(player);
+        for (Player player : players) {
+            playersArray[i++] = new Player(player);
         }
 
         return playersArray;
@@ -232,7 +232,7 @@ public class GameController {
         }
     }
 
-    public void startShot (Ally player, Coords origin) {
+    public void startShot (Player player, Coords origin) {
         if (!board.isFree(origin.transform(Direction.Right))) {
             return;
         }
@@ -262,7 +262,7 @@ public class GameController {
         ScoreEntry[] result = new ScoreEntry[score.size()];
         int i = 0;
 
-        for (Map.Entry<Ally, Integer> entry : score.entrySet()) {
+        for (Map.Entry<Player, Integer> entry : score.entrySet()) {
             result[i] = new ScoreEntry();
             result[i].id = entry.getKey().getId();
             result[i].score = entry.getValue();

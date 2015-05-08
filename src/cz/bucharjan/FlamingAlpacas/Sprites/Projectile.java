@@ -5,13 +5,13 @@ package cz.bucharjan.FlamingAlpacas.Sprites;
  */
 public class Projectile extends Sprite {
     private int timePerSquare = 50;
-    private Ally owner;
+    private Player owner;
 
     public Projectile () {
         super();
     }
 
-    public Projectile (int id, Ally owner) {
+    public Projectile (int id, Player owner) {
         super(id);
         this.owner = owner;
     }
@@ -30,7 +30,7 @@ public class Projectile extends Sprite {
         this.timePerSquare = timePerSquare;
     }
 
-    public Ally getOwner () {
+    public Player getOwner () {
         return owner;
     }
 }

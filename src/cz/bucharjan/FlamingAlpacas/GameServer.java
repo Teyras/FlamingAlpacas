@@ -4,7 +4,7 @@ import cz.bucharjan.FlamingAlpacas.Messages.ConnectMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.MoveMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.ShootMessage;
 import cz.bucharjan.FlamingAlpacas.Messages.SteerMessage;
-import cz.bucharjan.FlamingAlpacas.Sprites.Ally;
+import cz.bucharjan.FlamingAlpacas.Sprites.Player;
 import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
 import cz.bucharjan.FlamingAlpacas.Sprites.Projectile;
 
@@ -77,7 +77,7 @@ public class GameServer {
 
     public synchronized void receiveMessage (Object message, Client from) {
         if (message instanceof ConnectMessage) {
-            Ally sprite = controller.spawnPlayer();
+            Player sprite = controller.spawnPlayer();
             clients.put(from, new ClientData(from, sprite));
             return;
         }
@@ -88,10 +88,10 @@ public class GameServer {
         }
 
         if (message instanceof MoveMessage) {
-            Ally sprite = data.getSprite();
+            Player sprite = data.getSprite();
             sprite.transformPosition(((MoveMessage) message).getDirection());
         } else if (message instanceof SteerMessage) {
-            Ally sprite = data.getSprite();
+            Player sprite = data.getSprite();
             sprite.setDirection(((SteerMessage) message).getDirection());
         } else if (message instanceof ShootMessage) {
             controller.startShot(data.getSprite(), ((ShootMessage) message).getOrigin());
@@ -125,7 +125,7 @@ class StatusUpdate implements Serializable {
 
     private Board board;
     private Monster[] monsters;
-    private Ally[] players;
+    private Player[] players;
     private Projectile[] projectiles;
 
     private ScoreEntry[] score;
@@ -141,7 +141,7 @@ class StatusUpdate implements Serializable {
         this.board = board;
     }
 
-    public void setObjects (Monster[] monsters, Ally[] players, Projectile[] projectiles) {
+    public void setObjects (Monster[] monsters, Player[] players, Projectile[] projectiles) {
         this.monsters = monsters;
         this.players = players;
         this.projectiles = projectiles;
@@ -175,7 +175,7 @@ class StatusUpdate implements Serializable {
         return playerId;
     }
 
-    public Ally[] getPlayers () {
+    public Player[] getPlayers () {
         return players;
     }
 
@@ -190,9 +190,9 @@ class StatusUpdate implements Serializable {
 
 class ClientData {
     private Client client;
-    private Ally sprite;
+    private Player sprite;
 
-    public ClientData (Client client, Ally sprite) {
+    public ClientData (Client client, Player sprite) {
         this.client = client;
         this.sprite = sprite;
     }
@@ -201,7 +201,7 @@ class ClientData {
         return client;
     }
 
-    public Ally getSprite () {
+    public Player getSprite () {
         return sprite;
     }
 }
