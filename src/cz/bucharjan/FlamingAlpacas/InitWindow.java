@@ -2,6 +2,7 @@ package cz.bucharjan.FlamingAlpacas;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -28,33 +29,62 @@ public class InitWindow {
 
         Panel form = new Panel(new GridLayout(0, 2));
 
-        address = new TextField();
-        port = new TextField();
+        Label serverLabel = new Label("Host the game");
         server = new Checkbox();
+        server.setState(false);
+
+        Label addressLabel = new Label("Server address");
+        address = new TextField();
+        address.setEnabled(false);
+        address.setEditable(false);
+
+        server.addItemListener((ItemEvent e) -> {
+            address.setEnabled(server.getState());
+            address.setEditable(server.getState());
+        });
+
+        Label portLabel = new Label("Server port");
+        port = new TextField();
+
+        Label nicknameLabel = new Label("Nickname");
         nickname = new TextField();
 
         Button submit = new Button("OK");
         submit.addActionListener((event) -> {
-            Config config = getConfig();
+            try {
+                Config config = getConfig();
 
-            for (SubmitAction action: submitListeners) {
-                action.run(config);
+                for (SubmitAction action : submitListeners) {
+                    action.run(config);
+                }
+
+                frame.setVisible(false);
+                frame.dispose();
+            } catch (ValidationException e) {
+                switch (e.getField()) {
+                    case "port":
+                        port.setBackground(Color.red);
+                        break;
+                    case "address":
+                        address.setBackground(Color.red);
+                        break;
+                    case "nickname":
+                        nickname.setBackground(Color.red);
+                        break;
+                }
             }
-
-            frame.setVisible(false);
-            frame.dispose();
         });
 
-        form.add(new Label("Host the game"));
+        form.add(serverLabel);
         form.add(server);
 
-        form.add(new Label("Server port"));
-        form.add(port);
-
-        form.add(new Label("Server address"));
+        form.add(addressLabel);
         form.add(address);
 
-        form.add(new Label("Nickname"));
+        form.add(portLabel);
+        form.add(port);
+
+        form.add(nicknameLabel);
         form.add(nickname);
 
         pane.add(form, BorderLayout.CENTER);
@@ -72,24 +102,46 @@ public class InitWindow {
         submitListeners.add(action);
     }
 
-    private Config getConfig () {
+    private Config getConfig () throws ValidationException {
         Config config = new Config();
         config.server = server.getState();
+
+        if (port.getText().equals("")) {
+            throw new ValidationException("port");
+        }
 
         try {
             config.port = Integer.parseInt(port.getText());
         } catch (NumberFormatException e) {
-
+            throw new ValidationException("port");
         }
 
-        try {
-            config.address = InetAddress.getByName(address.getText());
-        } catch (UnknownHostException e) {
+        if (server.getState()) {
+            try {
+                config.address = InetAddress.getByName(address.getText());
+            } catch (UnknownHostException e) {
+                throw new ValidationException("address");
+            }
+        }
 
+        if (nickname.getText().equals("")) {
+            throw new ValidationException("nickname");
         }
 
         config.nickname = nickname.getText();
 
         return config;
+    }
+}
+
+class ValidationException extends Exception {
+    private String field;
+
+    public ValidationException (String field) {
+        this.field = field;
+    }
+
+    public String getField () {
+        return field;
     }
 }
