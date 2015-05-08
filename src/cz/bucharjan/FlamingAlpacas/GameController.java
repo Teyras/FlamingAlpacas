@@ -5,6 +5,7 @@ import cz.bucharjan.FlamingAlpacas.Sprites.Monster;
 import cz.bucharjan.FlamingAlpacas.Sprites.Projectile;
 import cz.bucharjan.FlamingAlpacas.Sprites.Sprite;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -21,6 +22,7 @@ public class GameController {
 
     private int nextSpriteId = 0;
     private boolean finished = false;
+    private Map<Ally, Integer> score = new HashMap<>();
 
     public GameController () {
         int width = 50;
@@ -135,6 +137,8 @@ public class GameController {
                         for (Monster monster : monsters) {
                             if (monster.getPosition().equals(projectile.getPosition())) {
                                 deadMonsters.add(monster);
+                                Ally owner = projectile.getOwner();
+                                score.put(owner, score.getOrDefault(owner, 0) + 1);
                                 stoppedProjectiles.add(projectile);
                                 break;
                             }
@@ -199,6 +203,7 @@ public class GameController {
     public Ally spawnPlayer () {
         Ally sprite = new Ally(getSpriteId());
         players.add(sprite);
+        score.put(sprite, 0);
         placeSprite(sprite, players, 0);
         return sprite;
     }
@@ -232,7 +237,7 @@ public class GameController {
             return;
         }
 
-        Projectile projectile = new Projectile(getSpriteId(), player.getId());
+        Projectile projectile = new Projectile(getSpriteId(), player);
         projectile.setDirection(Direction.Right);
         projectile.setPosition(origin);
         projectiles.add(projectile);
@@ -252,4 +257,23 @@ public class GameController {
 
         return projectilesArray;
     }
+
+    public ScoreEntry[] getScore () {
+        ScoreEntry[] result = new ScoreEntry[score.size()];
+        int i = 0;
+
+        for (Map.Entry<Ally, Integer> entry : score.entrySet()) {
+            result[i] = new ScoreEntry();
+            result[i].id = entry.getKey().getId();
+            result[i].score = entry.getValue();
+            i++;
+        }
+
+        return result;
+    }
+}
+
+class ScoreEntry implements Serializable {
+    public int id;
+    public int score;
 }

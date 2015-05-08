@@ -5,21 +5,21 @@ package cz.bucharjan.FlamingAlpacas.Sprites;
  */
 public class Projectile extends Sprite {
     private int timePerSquare = 50;
-    private int ownerId;
+    private Ally owner;
 
     public Projectile () {
         super();
     }
 
-    public Projectile (int id, int ownerId) {
+    public Projectile (int id, Ally owner) {
         super(id);
-        this.ownerId = ownerId;
+        this.owner = owner;
     }
 
     public Projectile (Projectile projectile) {
         super(projectile);
         this.timePerSquare = projectile.getTimePerSquare();
-        this.ownerId = projectile.getOwnerId();
+        this.owner = projectile.getOwner();
     }
 
     public int getTimePerSquare () {
@@ -30,7 +30,7 @@ public class Projectile extends Sprite {
         this.timePerSquare = timePerSquare;
     }
 
-    public int getOwnerId () {
-        return ownerId;
+    public Ally getOwner () {
+        return owner;
     }
 }

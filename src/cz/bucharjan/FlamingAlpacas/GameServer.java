@@ -104,6 +104,7 @@ public class GameServer {
         StatusUpdate update = new StatusUpdate(++updateNumber, state);
         update.setBoard(controller.getBoard());
         update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy(), controller.getProjectilesCopy());
+        update.setScore(controller.getScore());
 
         for (ClientData data : clients.values()) {
             update.setPlayerId(data.getSprite().getId());
@@ -127,6 +128,8 @@ class StatusUpdate implements Serializable {
     private Ally[] players;
     private Projectile[] projectiles;
 
+    private ScoreEntry[] score;
+
     private int playerId;
 
     public StatusUpdate (long number, GameState state) {
@@ -142,6 +145,10 @@ class StatusUpdate implements Serializable {
         this.monsters = monsters;
         this.players = players;
         this.projectiles = projectiles;
+    }
+
+    public void setScore (ScoreEntry[] score) {
+        this.score = score;
     }
 
     public void setPlayerId (int playerId) {
@@ -174,6 +181,10 @@ class StatusUpdate implements Serializable {
 
     public Projectile[] getProjectiles () {
         return projectiles;
+    }
+
+    public ScoreEntry[] getScore () {
+        return score;
     }
 }
 

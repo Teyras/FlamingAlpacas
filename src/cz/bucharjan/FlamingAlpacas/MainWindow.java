@@ -24,6 +24,8 @@ public class MainWindow {
     Player player = null;
     final JFrame frame = new JFrame("Flaming Alpacas");
 
+    JLabel scoreText;
+
     public MainWindow (ServerInterface serverInterface) {
         serverIface = serverInterface;
 
@@ -42,6 +44,18 @@ public class MainWindow {
                 connected = true;
                 setupUI(update.getBoard());
             }
+
+            StringBuilder builder = new StringBuilder();
+
+            for (ScoreEntry entry : update.getScore()) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+
+                builder.append(String.format("%d: %d", entry.id, entry.score));
+            }
+
+            scoreText.setText(builder.toString());
 
             switch (update.getState()) {
                 case PLAYING:
@@ -69,7 +83,7 @@ public class MainWindow {
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
-        pane.add(panel);
+        pane.add(panel, BorderLayout.CENTER);
 
         panel.addPlayerMoveListener((Direction direction) -> {
             serverIface.sendMessage(new MoveMessage(direction));
@@ -113,6 +127,15 @@ public class MainWindow {
 
             return false;
         });
+
+        JPanel statusbar = new JPanel();
+        int fontHeight = statusbar.getFontMetrics(statusbar.getFont()).getHeight();
+        statusbar.setPreferredSize(new Dimension(frame.getWidth(), fontHeight));
+        statusbar.setLayout(new BoxLayout(statusbar, BoxLayout.X_AXIS));
+        frame.add(statusbar, BorderLayout.SOUTH);
+
+        scoreText = new JLabel();
+        statusbar.add(scoreText);
 
         frame.pack();
         frame.setVisible(true);

@@ -286,7 +286,7 @@ public class GamePanel extends javax.swing.JPanel {
         }
 
         for (Projectile newProjectile : projectiles) {
-            if (newProjectile.getOwnerId() == player.getId()) {
+            if (newProjectile.getOwner().getId() == player.getId()) {
                 continue; // Player's projectiles are handled locally
             }
 
