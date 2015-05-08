@@ -160,6 +160,7 @@ public class GameController {
 
                 for (Monster monster : deadMonsters) {
                     monsters.remove(monster);
+                    monstersRemaining.remove(monster);
                 }
             }
         }, 0, projectilePeriod, TimeUnit.MILLISECONDS);
