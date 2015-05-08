@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_flamingalpacas" default="compile.module.flamingalpacas">
+  <dirname property="module.flamingalpacas.basedir" file="${ant.file.module_flamingalpacas}"/>
+  
+  <property name="module.jdk.home.flamingalpacas" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.flamingalpacas" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.flamingalpacas" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.flamingalpacas" value="-encoding UTF-8 -source 8 ${compiler.args}"/>
+  
+  <property name="flamingalpacas.output.dir" value="${module.flamingalpacas.basedir}/out/production/FlamingAlpacas"/>
+  <property name="flamingalpacas.testoutput.dir" value="${module.flamingalpacas.basedir}/out/test/FlamingAlpacas"/>
+  <property name="flamingalpacas.doc.dir" value="${module.flamingalpacas.basedir}/doc"/>
+  
+  <path id="flamingalpacas.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="flamingalpacas.module.production.classpath">
+    <path refid="${module.jdk.classpath.flamingalpacas}"/>
+  </path>
+  
+  <path id="flamingalpacas.runtime.production.module.classpath">
+    <pathelement location="${flamingalpacas.output.dir}"/>
+  </path>
+  
+  <path id="flamingalpacas.module.classpath">
+    <path refid="${module.jdk.classpath.flamingalpacas}"/>
+    <pathelement location="${flamingalpacas.output.dir}"/>
+  </path>
+  
+  <path id="flamingalpacas.runtime.module.classpath">
+    <pathelement location="${flamingalpacas.testoutput.dir}"/>
+    <pathelement location="${flamingalpacas.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.flamingalpacas">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.flamingalpacas">
+    <patternset refid="excluded.from.module.flamingalpacas"/>
+  </patternset>
+  
+  <path id="flamingalpacas.module.sourcepath">
+    <dirset dir="${module.flamingalpacas.basedir}">
+      <include name="src"/>
+      <include name="resources"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.flamingalpacas" depends="compile.module.flamingalpacas.production,compile.module.flamingalpacas.tests,compile.module.flamingalpacas.doc" description="Compile module FlamingAlpacas"/>
+  
+  <target name="compile.module.flamingalpacas.doc" depends="init" description="generate documentation">
+    <javadoc sourcepath="${module.flamingalpacas.basedir}/src" destdir="${flamingalpacas.doc.dir}"/>
+  </target>
+  
+  <target name="compile.module.flamingalpacas.production" description="Compile module FlamingAlpacas; production classes">
+    <mkdir dir="${flamingalpacas.output.dir}"/>
+    <javac destdir="${flamingalpacas.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.flamingalpacas}/javac">
+      <compilerarg line="${compiler.args.flamingalpacas}"/>
+      <bootclasspath refid="flamingalpacas.module.bootclasspath"/>
+      <classpath refid="flamingalpacas.module.production.classpath"/>
+      <src refid="flamingalpacas.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.flamingalpacas"/>
+    </javac>
+    
+    <copy todir="${flamingalpacas.output.dir}">
+      <fileset dir="${module.flamingalpacas.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.flamingalpacas.basedir}/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.flamingalpacas.tests" depends="compile.module.flamingalpacas.production" description="compile module FlamingAlpacas; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.flamingalpacas" description="cleanup module">
+    <delete dir="${flamingalpacas.output.dir}"/>
+    <delete dir="${flamingalpacas.testoutput.dir}"/>
+  </target>
+</project>

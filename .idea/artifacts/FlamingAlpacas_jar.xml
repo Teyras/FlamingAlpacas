@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="FlamingAlpacas:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/FlamingAlpacas_jar</output-path>
+    <root id="archive" name="FlamingAlpacas.jar">
+      <element id="module-output" name="FlamingAlpacas" />
+    </root>
+  </artifact>
+</component>
