@@ -39,7 +39,7 @@ public class GameServer {
             DatagramSocket socket = new DatagramSocket(port);
             DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
 
-            while (true) {
+            while (!controller.isFinished()) {
                 try {
                     socket.receive(packet);
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
@@ -67,6 +67,12 @@ public class GameServer {
         } catch (SocketException e) {
 
         }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
+
+        executor.shutdown();
     }
 
     public synchronized void receiveMessage (Object message, Client from) {
@@ -93,7 +99,9 @@ public class GameServer {
     }
 
     public synchronized void updateClients () {
-        StatusUpdate update = new StatusUpdate(++updateNumber);
+        GameState state = controller.isFinished() ? GameState.FINISHED : GameState.PLAYING;
+
+        StatusUpdate update = new StatusUpdate(++updateNumber, state);
         update.setBoard(controller.getBoard());
         update.setObjects(controller.getMonstersCopy(), controller.getPlayersCopy(), controller.getProjectilesCopy());
 
@@ -104,8 +112,15 @@ public class GameServer {
     }
 }
 
+enum GameState {
+    PLAYING,
+    FINISHED;
+}
+
+
 class StatusUpdate implements Serializable {
     private long number;
+    private GameState state;
 
     private Board board;
     private Monster[] monsters;
@@ -114,8 +129,9 @@ class StatusUpdate implements Serializable {
 
     private int playerId;
 
-    public StatusUpdate (long number) {
+    public StatusUpdate (long number, GameState state) {
         this.number = number;
+        this.state = state;
     }
 
     public void setBoard (Board board) {
@@ -134,6 +150,10 @@ class StatusUpdate implements Serializable {
 
     public long getNumber () {
         return number;
+    }
+
+    public GameState getState () {
+        return state;
     }
 
     public Board getBoard () {

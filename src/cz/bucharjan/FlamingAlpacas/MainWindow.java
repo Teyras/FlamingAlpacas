@@ -43,7 +43,15 @@ public class MainWindow {
                 setupUI(update.getBoard());
             }
 
-            panel.updateSprites(update.getMonsters(), update.getPlayers(), update.getProjectiles());
+            switch (update.getState()) {
+                case PLAYING:
+                    panel.updateSprites(update.getMonsters(), update.getPlayers(), update.getProjectiles());
+                    break;
+                case FINISHED:
+                    panel.setFinished();
+                    break;
+            }
+
             panel.repaint();
         });
 

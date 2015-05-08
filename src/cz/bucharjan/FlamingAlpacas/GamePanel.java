@@ -1,16 +1,15 @@
 package cz.bucharjan.FlamingAlpacas;
 
-import java.awt.Image;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 import cz.bucharjan.FlamingAlpacas.Sprites.*;
+
 
 public class GamePanel extends javax.swing.JPanel {
     final int fieldSize = 20;
@@ -20,6 +19,7 @@ public class GamePanel extends javax.swing.JPanel {
     Board board;
 
     private Player player;
+    private boolean finished = false;
     private int frameCount = 0;
 
     private Map<Integer, Monster> monsters = new HashMap<>();
@@ -108,6 +108,11 @@ public class GamePanel extends javax.swing.JPanel {
             paintBackground();
         }
 
+        if (finished) {
+            paintAftermath(g);
+            return;
+        }
+
         Image foreground = new BufferedImage(board.getWidth() * fieldSize, board.getHeight() * fieldSize, BufferedImage.TYPE_INT_ARGB);
         Graphics foregroundGraphics = foreground.getGraphics();
 
@@ -129,6 +134,25 @@ public class GamePanel extends javax.swing.JPanel {
         g.drawImage(foreground, 0, 0, null);
 
         frameCount++;
+    }
+
+    private void paintAftermath (Graphics panelGraphics) {
+        BufferedImage image = new BufferedImage(fieldSize * board.getWidth(), fieldSize * board.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+
+        g.setColor(Color.orange);
+        g.fillRect(0, 0, image.getWidth(), image.getHeight());
+        g.setColor(Color.black);
+        Font font = new Font("Purisa", Font.BOLD, 13);
+        g.setFont(font);
+        FontMetrics fm = g.getFontMetrics();
+        String text = "Game over";
+        g.drawString(
+                text,
+                (fieldSize * board.getWidth() - fm.stringWidth(text)) / 2,
+                fm.getAscent() + (fieldSize * board.getHeight() - (fm.getAscent() + fm.getDescent())) / 2);
+
+        panelGraphics.drawImage(image, 0, 0, null);
     }
 
     private void paintSprite (Graphics g, Sprite sprite) {
@@ -192,7 +216,9 @@ public class GamePanel extends javax.swing.JPanel {
         Coords target = data.getTarget();
 
         if (!board.isFree(target)) {
-            return false;
+            if (!(target.getX() == -1 && sprite instanceof Monster)) {
+                return false;
+            }
         }
 
         if (data.isMoving() && data.addProgress(time)) {
@@ -201,6 +227,10 @@ public class GamePanel extends javax.swing.JPanel {
         }
 
         return false;
+    }
+
+    public synchronized void setFinished () {
+        finished = true;
     }
 
     public synchronized void updateSprites (Monster[] monsters, Ally[] allies, Projectile[] projectiles) {

@@ -20,6 +20,7 @@ public class GameController {
     private final List<Projectile> projectiles = new ArrayList<>();
 
     private int nextSpriteId = 0;
+    private boolean finished = false;
 
     public GameController () {
         int width = 50;
@@ -51,7 +52,12 @@ public class GameController {
         return board;
     }
 
+    public boolean isFinished () {
+        return finished;
+    }
+
     public void run () {
+        finished = false;
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
         Random rand = new Random();
 
@@ -76,7 +82,10 @@ public class GameController {
                         newTime += sprite.getTimePerSquare();
                         sprite.setPosition(sprite.getPosition().transform(sprite.getDirection()));
 
-                        if (board.isFree(sprite.getPosition().transform(Direction.Left))) {
+                        if (sprite.getPosition().getX() == -1) {
+                            executor.shutdown();
+                            finished = true;
+                        } else if (sprite.getPosition().getX() == 0 || board.isFree(sprite.getPosition().transform(Direction.Left))) {
                             sprite.setDirection(Direction.Left);
                         } else if (!board.isFree(sprite.getPosition().transform(sprite.getDirection()))) {
                             boolean freeUp = board.isFree(sprite.getPosition().transform(Direction.Up));
