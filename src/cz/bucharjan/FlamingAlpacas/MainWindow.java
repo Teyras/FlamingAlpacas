@@ -155,4 +155,8 @@ public class MainWindow {
                 return Direction.None;
         }
     }
+
+    public void close () {
+        frame.dispose();
+    }
 }

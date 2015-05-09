@@ -29,43 +29,39 @@ public class GameServer {
         this.port = port;
     }
 
-    public void serve () {
+    public void serve () throws SocketException {
         ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
         executor.scheduleAtFixedRate(this::updateClients, 0, 200, TimeUnit.MILLISECONDS);
 
         controller.run();
 
-        try {
-            DatagramSocket socket = new DatagramSocket(port);
-            DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
+        DatagramSocket socket = new DatagramSocket(port);;
+        DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
 
-            while (!controller.isFinished()) {
-                try {
-                    socket.receive(packet);
-                    ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
-                    Client from = null;
+        while (!controller.isFinished()) {
+            try {
+                socket.receive(packet);
+                ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
+                Client from = null;
 
-                    for (ClientData clientData : clients.values()) {
-                        Client client = clientData.getClient();
-                        if (client instanceof RemoteClient && ((RemoteClient) client).getAddress().equals(packet.getSocketAddress())) {
-                            from = client;
-                            break;
-                        }
+                for (ClientData clientData : clients.values()) {
+                    Client client = clientData.getClient();
+                    if (client instanceof RemoteClient && ((RemoteClient) client).getAddress().equals(packet.getSocketAddress())) {
+                        from = client;
+                        break;
                     }
-
-                    if (from == null) {
-                        from = new RemoteClient(packet.getSocketAddress());
-                    }
-
-                    receiveMessage(stream.readObject(), from);
-                } catch (IOException e) {
-
-                } catch (ClassNotFoundException e) {
-
                 }
-            }
-        } catch (SocketException e) {
 
+                if (from == null) {
+                    from = new RemoteClient(packet.getSocketAddress());
+                }
+
+                receiveMessage(stream.readObject(), from);
+            } catch (IOException e) {
+                System.err.println("IO exception in server socket");
+            } catch (ClassNotFoundException e) {
+                System.err.println("Server/client version mismatch");
+            }
         }
 
         try {
