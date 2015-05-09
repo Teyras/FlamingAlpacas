@@ -28,7 +28,9 @@ public class RemoteServerInterface implements ServerInterface {
 
         new Thread(()-> {
             DatagramPacket packet = new DatagramPacket(new byte[65536], 65536, sockaddr);
-            while (true) {
+            boolean finished = false;
+
+            while (!finished) {
                 try {
                     socket.receive(packet);
                     ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(packet.getData(), 0, packet.getLength()));
@@ -37,6 +39,9 @@ public class RemoteServerInterface implements ServerInterface {
                     if (update.getNumber() > lastUpdateNumber) {
                         notifyListeners(update);
                         lastUpdateNumber = update.getNumber();
+                        if (update.getState() == GameState.FINISHED) {
+                            finished = true;
+                        }
                     }
                 } catch (IOException e) {
                     System.err.println("IOException");
