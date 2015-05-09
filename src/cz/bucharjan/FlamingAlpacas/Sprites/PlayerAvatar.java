@@ -1,6 +1,5 @@
 package cz.bucharjan.FlamingAlpacas.Sprites;
 
-import cz.bucharjan.FlamingAlpacas.Coords;
 import cz.bucharjan.FlamingAlpacas.Direction;
 
 import java.util.Stack;

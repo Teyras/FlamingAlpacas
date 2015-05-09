@@ -3,7 +3,6 @@ package cz.bucharjan.FlamingAlpacas;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
