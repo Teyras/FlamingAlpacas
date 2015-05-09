@@ -17,13 +17,9 @@ public class RemoteServerInterface implements ServerInterface {
     private List<UpdateAction> updateListeners = new ArrayList<>();
     private long lastUpdateNumber = 0;
 
-    public RemoteServerInterface (InetAddress addr, int port) {
-        try {
-            socket = new DatagramSocket();
-            sockaddr = new InetSocketAddress(addr, port);
-        } catch (SocketException e) {
-
-        }
+    public RemoteServerInterface (InetAddress addr, int port) throws SocketException {
+        socket = new DatagramSocket();
+        sockaddr = new InetSocketAddress(addr, port);
     }
 
     @Override
@@ -59,7 +55,7 @@ public class RemoteServerInterface implements ServerInterface {
             DatagramPacket msgPacket = new DatagramPacket(stream.toByteArray(), stream.size(), sockaddr);
             socket.send(msgPacket);
         } catch (IOException e) {
-
+            System.err.println("IO error when sending message");
         }
     }
 

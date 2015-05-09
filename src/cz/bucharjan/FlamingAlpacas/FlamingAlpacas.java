@@ -18,7 +18,7 @@ public class FlamingAlpacas {
     }
 
     private static void startGame (Config config) {
-        ServerInterface serverInterface;
+        ServerInterface serverInterface = null;
 
         if (config.server) {
             final GameServer server = new GameServer(config.port);
@@ -26,6 +26,7 @@ public class FlamingAlpacas {
                 try {
                     server.serve();
                 } catch (SocketException e) {
+                    System.err.println("Error creating server socket");
                     if (window != null) {
                         window.close();
                     }
@@ -34,7 +35,11 @@ public class FlamingAlpacas {
 
             serverInterface = new LocalServerInterface(server);
         } else {
-            serverInterface = new RemoteServerInterface(config.address, config.port);
+            try {
+                serverInterface = new RemoteServerInterface(config.address, config.port);
+            } catch (SocketException e) {
+                System.err.println("Error creating client socket");
+            }
         }
 
         window = new MainWindow(config.nickname, serverInterface);

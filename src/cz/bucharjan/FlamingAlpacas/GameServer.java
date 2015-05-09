@@ -53,7 +53,11 @@ public class GameServer {
                 }
 
                 if (from == null) {
-                    from = new RemoteClient(packet.getSocketAddress());
+                    try {
+                        from = new RemoteClient(packet.getSocketAddress());
+                    } catch (SocketException e) {
+                        continue;
+                    }
                 }
 
                 receiveMessage(stream.readObject(), from);
@@ -214,13 +218,9 @@ class RemoteClient implements Client {
     private DatagramSocket socket;
     private SocketAddress sockaddr;
 
-    public RemoteClient (SocketAddress address) {
-        try {
-            socket = new DatagramSocket();
-            sockaddr = address;
-        } catch (SocketException e) {
-
-        }
+    public RemoteClient (SocketAddress address) throws SocketException {
+        socket = new DatagramSocket();
+        sockaddr = address;
     }
 
     public SocketAddress getAddress () {
@@ -236,7 +236,7 @@ class RemoteClient implements Client {
 
             socket.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO error during client update");
         }
     }
 }
