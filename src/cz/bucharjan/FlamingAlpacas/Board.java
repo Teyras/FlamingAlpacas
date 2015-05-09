@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class Board implements Serializable {
     private int width;
     private int height;
-    boolean[][] walls;
+    private boolean[][] walls;
 
     public Board (int width, int height, boolean[][] walls) {
         this.width = width;

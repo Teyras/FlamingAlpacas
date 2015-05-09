@@ -12,11 +12,11 @@ import cz.bucharjan.FlamingAlpacas.Sprites.*;
 
 
 public class GamePanel extends javax.swing.JPanel {
-    final int fieldSize = 20;
+    private final int fieldSize = 20;
 
     private Image background;
 
-    Board board;
+    private Board board;
 
     private PlayerAvatar player;
     private boolean finished = false;

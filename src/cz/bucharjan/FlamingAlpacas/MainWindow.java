@@ -18,13 +18,13 @@ import java.util.concurrent.TimeUnit;
  * Created by teyras on 11.2.15.
  */
 public class MainWindow {
-    ServerInterface serverIface;
-    GamePanel panel;
-    boolean connected = false;
-    PlayerAvatar player = null;
-    final JFrame frame = new JFrame("Flaming Alpacas");
+    private ServerInterface serverIface;
+    private GamePanel panel;
+    private boolean connected = false;
+    private PlayerAvatar player = null;
+    private final JFrame frame = new JFrame("Flaming Alpacas");
 
-    JLabel scoreText;
+    private JLabel scoreText;
 
     public MainWindow (String nickname, ServerInterface serverInterface) {
         serverIface = serverInterface;
