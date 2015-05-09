@@ -34,12 +34,12 @@ public class InitWindow {
 
         Label addressLabel = new Label("Server address");
         address = new TextField();
-        address.setEnabled(false);
-        address.setEditable(false);
+        address.setEnabled(true);
+        address.setEditable(true);
 
         server.addItemListener((ItemEvent e) -> {
-            address.setEnabled(server.getState());
-            address.setEditable(server.getState());
+            address.setEnabled(!server.getState());
+            address.setEditable(!server.getState());
         });
 
         Label portLabel = new Label("Server port");
@@ -115,7 +115,7 @@ public class InitWindow {
             throw new ValidationException("port");
         }
 
-        if (server.getState()) {
+        if (!server.getState()) {
             try {
                 config.address = InetAddress.getByName(address.getText());
             } catch (UnknownHostException e) {
